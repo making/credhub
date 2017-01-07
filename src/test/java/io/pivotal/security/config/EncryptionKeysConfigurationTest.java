@@ -13,6 +13,8 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.util.List;
+
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -24,9 +26,22 @@ public class EncryptionKeysConfigurationTest {
     wireAndUnwire(this, false);
 
     it("fills in list of keys from application-unit-test.yml", () -> {
-      assertThat(subject.getKeys().size(), equalTo(2));
-      assertThat(subject.getKeys().get(0), equalTo("D673ACD01DA091B08144FBC8C0B5F524"));
-      assertThat(subject.getKeys().get(1), equalTo("A673ACF01DB091B08133FBC8C0B5F555"));
+      List<EncryptionKeyMetadata> keys = subject.getKeys();
+      assertThat(keys.size(), equalTo(4));
+
+      EncryptionKeyMetadata devKey1 = keys.get(0);
+      assertThat(devKey1.getDevKey(), equalTo("D673ACD01DA091B08144FBC8C0B5F524"));
+      assertThat(devKey1.isActive(), equalTo(false));
+
+      EncryptionKeyMetadata activeKey = keys.get(1);
+      assertThat(activeKey.getDevKey(), equalTo("A673ACF01DB091B08133FBC8C0B5F555"));
+      assertThat(activeKey.isActive(), equalTo(true));
+
+      EncryptionKeyMetadata hsmKey = keys.get(2);
+      assertThat(hsmKey.getActiveKeyName(), equalTo("test-hsm-key"));
+
+      EncryptionKeyMetadata dsmKey = keys.get(3);
+      assertThat(dsmKey.getActiveKeyName(), equalTo("test-dsm-key"));
     });
   }
 }

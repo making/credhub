@@ -9,20 +9,20 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 
 public class EncryptionKey {
-  private final EncryptionConfiguration encryptionConfiguration;
+  private final EncryptionProviderConfiguration encryptionProviderConfiguration;
   private final Key key;
 
-  public EncryptionKey(EncryptionConfiguration encryptionConfiguration, Key key) {
-    this.encryptionConfiguration = encryptionConfiguration;
+  public EncryptionKey(EncryptionProviderConfiguration encryptionProviderConfiguration, Key key) {
+    this.encryptionProviderConfiguration = encryptionProviderConfiguration;
     this.key = key;
   }
 
   public Cipher getCipher() throws NoSuchAlgorithmException, NoSuchPaddingException {
-    return encryptionConfiguration.getCipher();
+    return encryptionProviderConfiguration.getCipher();
   }
 
   public IvParameterSpec generateParameterSpec(byte[] nonce) {
-    return encryptionConfiguration.generateParameterSpec(nonce);
+    return encryptionProviderConfiguration.generateParameterSpec(nonce);
   }
 
   public Key getKey() {
@@ -30,6 +30,6 @@ public class EncryptionKey {
   }
 
   public SecureRandom getSecureRandom() {
-    return encryptionConfiguration.getSecureRandom();
+    return encryptionProviderConfiguration.getSecureRandom();
   }
 }

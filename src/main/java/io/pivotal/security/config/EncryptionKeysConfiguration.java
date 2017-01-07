@@ -9,7 +9,7 @@ import java.util.List;
 @Configuration
 @ConfigurationProperties("encryption")
 public class EncryptionKeysConfiguration {
-  private List<String> keys = new ArrayList<>();
+  private List<EncryptionKeyMetadata> keys = new ArrayList<>();
 
-  public List<String> getKeys() { return keys; }
+  public List<EncryptionKeyMetadata> getKeys() { return keys; }
 }

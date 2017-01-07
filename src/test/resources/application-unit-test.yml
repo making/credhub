@@ -7,10 +7,12 @@ auth-server:
 
 encryption:
   provider: dev_internal
-  active-key: D673ACD01DA091B08144FBC8C0B5F524
   keys:
-    - D673ACD01DA091B08144FBC8C0B5F524
-    - A673ACF01DB091B08133FBC8C0B5F555
+  - dev_key: D673ACD01DA091B08144FBC8C0B5F524
+  - dev_key: A673ACF01DB091B08133FBC8C0B5F555
+    active: true
+  - active_key_name: "test-hsm-key"
+  - active_key_name: "test-dsm-key"
 
 security:
   oauth2:

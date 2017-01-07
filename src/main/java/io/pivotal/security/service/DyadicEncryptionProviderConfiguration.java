@@ -1,11 +1,10 @@
 package io.pivotal.security.service;
 
+import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.constants.CipherTypes;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-
-import static java.util.Arrays.asList;
 
 import java.lang.reflect.Constructor;
 import java.security.KeyStore;
@@ -15,7 +14,6 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
@@ -25,24 +23,17 @@ import javax.crypto.spec.IvParameterSpec;
 @SuppressWarnings("unused")
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dsm")
-public class DyadicEncryptionConfiguration implements EncryptionConfiguration {
+public class DyadicEncryptionProviderConfiguration implements EncryptionProviderConfiguration {
   private List<EncryptionKey> keys;
   @Value("${dsm.encryption-key-name}")
   String encryptionKeyAlias;
 
   private Provider provider;
-  private EncryptionKey key;
   private SecureRandom secureRandom;
 
-  public DyadicEncryptionConfiguration() throws Exception {
+  public DyadicEncryptionProviderConfiguration() throws Exception {
     provider = (Provider) Class.forName("com.dyadicsec.provider.DYCryptoProvider").newInstance();
     Security.addProvider(provider);
-  }
-
-  @PostConstruct
-  private void initialize() throws Exception {
-    initializeKeys();
-    keys = asList(key);
   }
 
   @Override
@@ -53,16 +44,6 @@ public class DyadicEncryptionConfiguration implements EncryptionConfiguration {
   @Override
   public SecureRandom getSecureRandom() {
     return secureRandom;
-  }
-
-  @Override
-  public EncryptionKey getActiveKey() {
-    return key;
-  }
-
-  @Override
-  public List<EncryptionKey> getKeys() {
-    return keys;
   }
 
   @Override
@@ -81,6 +62,11 @@ public class DyadicEncryptionConfiguration implements EncryptionConfiguration {
     }
   }
 
+  @Override
+  public EncryptionKey createKey(EncryptionKeyMetadata keyMetadata) {
+    return null;
+  }
+
   private void initializeKeys() throws Exception {
     KeyStore keyStore = KeyStore.getInstance("PKCS11", provider);
     keyStore.load(null);
@@ -94,6 +80,6 @@ public class DyadicEncryptionConfiguration implements EncryptionConfiguration {
       keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
     }
 
-    key = new EncryptionKey(this, keyStore.getKey(encryptionKeyAlias, null));
+    new EncryptionKey(this, keyStore.getKey(encryptionKeyAlias, null));
   }
 }
