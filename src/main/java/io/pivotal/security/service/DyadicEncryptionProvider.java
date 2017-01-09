@@ -23,7 +23,7 @@ import javax.crypto.spec.IvParameterSpec;
 @SuppressWarnings("unused")
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dsm")
-public class DyadicEncryptionProviderConfiguration implements EncryptionProviderConfiguration {
+public class DyadicEncryptionProvider implements EncryptionProvider {
   private List<EncryptionKey> keys;
   @Value("${dsm.encryption-key-name}")
   String encryptionKeyAlias;
@@ -31,7 +31,7 @@ public class DyadicEncryptionProviderConfiguration implements EncryptionProvider
   private Provider provider;
   private SecureRandom secureRandom;
 
-  public DyadicEncryptionProviderConfiguration() throws Exception {
+  public DyadicEncryptionProvider() throws Exception {
     provider = (Provider) Class.forName("com.dyadicsec.provider.DYCryptoProvider").newInstance();
     Security.addProvider(provider);
   }

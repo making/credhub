@@ -23,12 +23,12 @@ import javax.xml.bind.DatatypeConverter;
 
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dev_internal")
-public class BCEncryptionProviderConfiguration implements EncryptionProviderConfiguration {
+public class BCEncryptionProvider implements EncryptionProvider {
   private final SecureRandom secureRandom;
   private final BouncyCastleProvider provider;
 
   @Autowired
-  BCEncryptionProviderConfiguration(BouncyCastleProvider provider)
+  BCEncryptionProvider(BouncyCastleProvider provider)
       throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
     this.provider = provider;
 

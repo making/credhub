@@ -25,7 +25,7 @@ import javax.crypto.spec.IvParameterSpec;
 @SuppressWarnings("unused")
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
 @Component
-public class LunaEncryptionProviderConfiguration implements EncryptionProviderConfiguration {
+public class LunaEncryptionProvider implements EncryptionProvider {
 
   @Value("${hsm.partition}")
   String partitionName;
@@ -43,7 +43,7 @@ public class LunaEncryptionProviderConfiguration implements EncryptionProviderCo
   private KeyStore keyStore;
   private KeyGenerator aesKeyGenerator;
 
-  public LunaEncryptionProviderConfiguration() throws Exception {
+  public LunaEncryptionProvider() throws Exception {
     provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
     Security.addProvider(provider);
   }

@@ -39,7 +39,7 @@ public class EncryptionKeyCanaryMapperTest {
   private EncryptionKeyCanaryMapper subject;
   private EncryptionService encryptionService;
   private EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
-  private EncryptionProviderConfiguration encryptionProviderConfiguration;
+  private EncryptionProvider encryptionProvider;
   private UUID activeCanaryUUID;
   private UUID existingCanaryUUID1;
   private UUID existingCanaryUUID2;
@@ -56,12 +56,12 @@ public class EncryptionKeyCanaryMapperTest {
     beforeEach(() -> {
       encryptionService = mock(EncryptionService.class);
       encryptionKeyCanaryDataService = mock(EncryptionKeyCanaryDataService.class);
-      encryptionProviderConfiguration = mock(EncryptionProviderConfiguration.class);
+      encryptionProvider = mock(EncryptionProvider.class);
 
       activeCanaryUUID = UUID.randomUUID();
 
       Key activeKey = new SecretKeySpec(DatatypeConverter.parseHexBinary("1123456789ABCDEF0123456789ABCDEF"), 0, 16, "AES");
-      activeEncryptionKey = new EncryptionKey(encryptionProviderConfiguration, activeKey);
+      activeEncryptionKey = new EncryptionKey(encryptionProvider, activeKey);
 
       encryptionKeyConfigurationService = mock(EncryptionKeyConfigurationService.class);
 
@@ -170,10 +170,10 @@ public class EncryptionKeyCanaryMapperTest {
         existingCanaryUUID2 = UUID.randomUUID();
 
         Key existingKey1 = new SecretKeySpec(DatatypeConverter.parseHexBinary("0123456789ABCDEF0123456789ABCDEF"), 0, 16, "AES");
-        existingEncryptionKey1 = new EncryptionKey(encryptionProviderConfiguration, existingKey1);
+        existingEncryptionKey1 = new EncryptionKey(encryptionProvider, existingKey1);
 
         Key existingKey2 = new SecretKeySpec(DatatypeConverter.parseHexBinary("8123456789ABCDEF0123456789ABCDEF"), 0, 16, "AES");
-        existingEncryptionKey2 = new EncryptionKey(encryptionProviderConfiguration, existingKey2);
+        existingEncryptionKey2 = new EncryptionKey(encryptionProvider, existingKey2);
 
         when(encryptionKeyConfigurationService.getEncryptionKeys()).thenReturn(asList(existingEncryptionKey1, activeEncryptionKey, existingEncryptionKey2));
 

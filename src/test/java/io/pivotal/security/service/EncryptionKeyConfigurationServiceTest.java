@@ -23,7 +23,7 @@ import java.util.List;
 @RunWith(Spectrum.class)
 public class EncryptionKeyConfigurationServiceTest {
   private EncryptionKeysConfiguration encryptionKeysConfiguration;
-  private EncryptionProviderConfiguration encryptionProviderConfiguration;
+  private EncryptionProvider encryptionProvider;
   private EncryptionKeyMetadata keyMetadata1;
   private EncryptionKeyMetadata activeKeyMetadata;
   private EncryptionKeyMetadata keyMetadata3;
@@ -36,7 +36,7 @@ public class EncryptionKeyConfigurationServiceTest {
   {
     beforeEach(() -> {
       encryptionKeysConfiguration = mock(EncryptionKeysConfiguration.class);
-      encryptionProviderConfiguration = mock(EncryptionProviderConfiguration.class);
+      encryptionProvider = mock(EncryptionProvider.class);
     });
 
     describe("when there are no active keys", () -> {
@@ -49,7 +49,7 @@ public class EncryptionKeyConfigurationServiceTest {
 
             new EncryptionKeyConfigurationService(
                 encryptionKeysConfiguration,
-                encryptionProviderConfiguration
+                encryptionProvider
             );
           }
       );
@@ -70,7 +70,7 @@ public class EncryptionKeyConfigurationServiceTest {
 
             new EncryptionKeyConfigurationService(
                 encryptionKeysConfiguration,
-                mock(EncryptionProviderConfiguration.class)
+                mock(EncryptionProvider.class)
             );
           }
       );
@@ -91,18 +91,18 @@ public class EncryptionKeyConfigurationServiceTest {
         activeKey = mock(EncryptionKey.class);
         key3 = mock(EncryptionKey.class);
 
-        when(encryptionProviderConfiguration.createKey(keyMetadata1))
+        when(encryptionProvider.createKey(keyMetadata1))
             .thenReturn(key1);
-        when(encryptionProviderConfiguration.createKey(activeKeyMetadata))
+        when(encryptionProvider.createKey(activeKeyMetadata))
             .thenReturn(activeKey);
-        when(encryptionProviderConfiguration.createKey(keyMetadata3))
+        when(encryptionProvider.createKey(keyMetadata3))
             .thenReturn(key3);
-        when(encryptionProviderConfiguration.createKey(invalidKeyMetadata))
+        when(encryptionProvider.createKey(invalidKeyMetadata))
             .thenReturn(null);
 
         subject = new EncryptionKeyConfigurationService(
             encryptionKeysConfiguration,
-            encryptionProviderConfiguration
+            encryptionProvider
         );
       });
 
@@ -133,12 +133,12 @@ public class EncryptionKeyConfigurationServiceTest {
               when(encryptionKeysConfiguration.getKeys())
                   .thenReturn(asList(keyMetadata));
 
-              when(encryptionProviderConfiguration.createKey(any(EncryptionKeyMetadata.class)))
+              when(encryptionProvider.createKey(any(EncryptionKeyMetadata.class)))
                   .thenReturn(null);
 
               new EncryptionKeyConfigurationService(
                   encryptionKeysConfiguration,
-                  encryptionProviderConfiguration
+                  encryptionProvider
               );
           }
         );

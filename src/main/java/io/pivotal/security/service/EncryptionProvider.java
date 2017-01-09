@@ -10,7 +10,7 @@ import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 
-public interface EncryptionProviderConfiguration {
+public interface EncryptionProvider {
   Provider getProvider();
 
   SecureRandom getSecureRandom();

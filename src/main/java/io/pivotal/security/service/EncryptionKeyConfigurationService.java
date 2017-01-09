@@ -17,7 +17,7 @@ public class EncryptionKeyConfigurationService {
 
   EncryptionKeyConfigurationService(
       EncryptionKeysConfiguration encryptionKeysConfiguration,
-      EncryptionProviderConfiguration encryptionProviderConfiguration
+      EncryptionProvider encryptionProvider
   ) {
     List<EncryptionKeyMetadata> keyMetadatas = encryptionKeysConfiguration.getKeys();
     Map<Boolean, List<EncryptionKeyMetadata>> partitionedKeys = keyMetadatas
@@ -31,7 +31,7 @@ public class EncryptionKeyConfigurationService {
       throw new EncryptionKeyConfigurationException("error.invalid_active_key_number");
     }
 
-    activeKey = encryptionProviderConfiguration.createKey(activeKeyList.get(0));
+    activeKey = encryptionProvider.createKey(activeKeyList.get(0));
 
     if (activeKey == null) {
       throw new EncryptionKeyConfigurationException("error.invalid_active_key");
@@ -39,7 +39,7 @@ public class EncryptionKeyConfigurationService {
 
     encryptionKeys = inactiveKeyList
         .stream()
-        .map(encryptionProviderConfiguration::createKey)
+        .map(encryptionProvider::createKey)
         .filter(keyMetadata -> keyMetadata != null)
         .collect(Collectors.toList());
 

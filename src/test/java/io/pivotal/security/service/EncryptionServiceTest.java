@@ -30,7 +30,7 @@ public class EncryptionServiceTest {
       keyMetadata.setDevKey("A673ACF01DB091B08133FBC8C0B5F555");
       when(encryptionKeysConfiguration.getKeys()).thenReturn(asList(keyMetadata));
 
-      BCEncryptionProviderConfiguration bcEncryptionProviderConfiguration = new BCEncryptionProviderConfiguration(new BouncyCastleProvider());
+      BCEncryptionProvider bcEncryptionProviderConfiguration = new BCEncryptionProvider(new BouncyCastleProvider());
       encryptionKey = bcEncryptionProviderConfiguration.createKey(keyMetadata);
 
       subject = new EncryptionService();
