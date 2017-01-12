@@ -61,7 +61,7 @@ public class CASetterRequestTranslatorTest {
 
         subject.populateEntityFromJson(entity, parsed);
 
-        assertThat(entity.getType(), equalTo("root"));
+        assertThat(entity.getCertificateAuthorityType(), equalTo("root"));
         assertThat(entity.getCertificate(), equalTo("a"));
         assertThat(entity.getPrivateKey(), equalTo("b"));
       });

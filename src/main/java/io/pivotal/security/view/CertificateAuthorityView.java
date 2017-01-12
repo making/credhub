@@ -14,9 +14,9 @@ public class CertificateAuthorityView extends BaseView {
 
   public CertificateAuthorityView(NamedCertificateAuthority namedCa) {
     super(namedCa.getVersionCreatedAt());
-    this.type = namedCa.getType();
+    this.type = namedCa.getCertificateAuthorityType();
     this.uuid = namedCa.getUuid();
-    this.value = new CertificateAuthority(namedCa.getType(), namedCa.getCertificate(), namedCa.getPrivateKey());
+    this.value = new CertificateAuthority(namedCa.getCertificateAuthorityType(), namedCa.getCertificate(), namedCa.getPrivateKey());
   }
 
   @JsonProperty("type")

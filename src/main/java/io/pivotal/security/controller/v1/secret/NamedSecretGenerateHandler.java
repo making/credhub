@@ -2,7 +2,13 @@ package io.pivotal.security.controller.v1.secret;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.SecretKindMappingFactory;
-import io.pivotal.security.entity.*;
+import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.entity.NamedPasswordSecret;
+import io.pivotal.security.entity.NamedRsaSecret;
+import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.NamedSshSecret;
+import io.pivotal.security.mapper.CASetterRequestTranslator;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
 import io.pivotal.security.mapper.RsaGeneratorRequestTranslator;
@@ -22,6 +28,9 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
 
   @Autowired
   CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
+
+  @Autowired
+  CASetterRequestTranslator caSetRequestTranslator;
 
   @Autowired
   SshGeneratorRequestTranslator sshGeneratorRequestTranslator;
@@ -45,6 +54,12 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
       @Override
       public NamedSecret certificate(NamedSecret namedSecret) throws NoSuchAlgorithmException {
         return createNewSecret((NamedCertificateSecret) namedSecret, NamedCertificateSecret::new, secretPath, certificateGeneratorRequestTranslator, parsedRequest);
+      }
+
+      @Override
+      public NamedSecret certificateAuthority(NamedSecret namedSecret) throws NoSuchAlgorithmException {
+        // TODO
+        return createNewSecret((NamedCertificateAuthority) namedSecret, NamedCertificateAuthority::new, secretPath, caSetRequestTranslator, parsedRequest);
       }
 
       @Override

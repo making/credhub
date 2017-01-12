@@ -27,7 +27,7 @@ public class CASetterRequestTranslator implements RequestTranslator<NamedCertifi
       throw new ParameterizedValidationException("error.missing_ca_credentials");
     }
     namedCA
-        .setType(type)
+        .setCertificateAuthorityType(type)
         .setCertificate(certificate)
         .setPrivateKey(privateKey);
   }

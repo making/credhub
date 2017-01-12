@@ -115,7 +115,7 @@ public class CaControllerTest {
 
       uuid = UUID.randomUUID();
       fakeGeneratedCa = new NamedCertificateAuthority(UNIQUE_NAME)
-          .setType("root")
+          .setCertificateAuthorityType("root")
           .setCertificate("my_cert")
           .setPrivateKey("private_key")
           .setUuid(uuid)
@@ -126,7 +126,7 @@ public class CaControllerTest {
     describe("generating a ca", () -> {
       describe("when creating a new CA", () -> {
         beforeEach(() -> {
-          doReturn(new CertificateAuthority(fakeGeneratedCa.getType(), fakeGeneratedCa.getCertificate(), fakeGeneratedCa.getPrivateKey()))
+          doReturn(new CertificateAuthority(fakeGeneratedCa.getCertificateAuthorityType(), fakeGeneratedCa.getCertificate(), fakeGeneratedCa.getPrivateKey()))
               .when(certificateAuthorityGenerator).generateSecret(any(CertificateSecretParameters.class));
           doReturn(
               fakeGeneratedCa
@@ -283,7 +283,7 @@ public class CaControllerTest {
         doAnswer(invocation -> {
           NamedCertificateAuthority certificateAuthority = invocation.getArgumentAt(0, NamedCertificateAuthority.class);
           return new NamedCertificateAuthority(certificateAuthority.getName())
-              .setType("root")
+              .setCertificateAuthorityType("root")
               .setCertificate("my_cert")
               .setPrivateKey(certificateAuthority.getPrivateKey())
               .setVersionCreatedAt(FROZEN_TIME_INSTANT)
@@ -340,7 +340,7 @@ public class CaControllerTest {
           uuid = UUID.randomUUID();
           doReturn(
               new NamedCertificateAuthority(UNIQUE_NAME)
-                  .setType("root")
+                  .setCertificateAuthorityType("root")
                   .setCertificate("my_cert")
                   .setPrivateKey("private_key")
                   .setVersionCreatedAt(FROZEN_TIME_INSTANT)
@@ -378,7 +378,7 @@ public class CaControllerTest {
           uuid = UUID.randomUUID();
           doReturn(
               new NamedCertificateAuthority(UNIQUE_NAME)
-                  .setType("root")
+                  .setCertificateAuthorityType("root")
                   .setCertificate("my_cert")
                   .setPrivateKey("private_key")
                   .setVersionCreatedAt(FROZEN_TIME_INSTANT)
@@ -526,14 +526,14 @@ public class CaControllerTest {
       beforeEach(() -> {
         uuid = UUID.randomUUID();
         olderStoredCa = new NamedCertificateAuthority(UNIQUE_NAME)
-            .setType("root")
+            .setCertificateAuthorityType("root")
             .setCertificate("my-certificate-old")
             .setPrivateKey("my-priv")
             .setUuid(uuid)
             .setVersionCreatedAt(OLDER_FROZEN_TIME_INSTANT);
         uuid = UUID.randomUUID();
         storedCa = new NamedCertificateAuthority(UNIQUE_NAME)
-            .setType("root")
+            .setCertificateAuthorityType("root")
             .setCertificate("my-certificate")
             .setPrivateKey("my-priv")
             .setUuid(uuid)
@@ -738,7 +738,7 @@ public class CaControllerTest {
     describe("by id", () -> {
       beforeEach(() -> {
         storedCa = new NamedCertificateAuthority(UNIQUE_NAME)
-            .setType("root")
+            .setCertificateAuthorityType("root")
             .setCertificate("my-certificate")
             .setPrivateKey("my-priv")
             .setUuid(uuid)

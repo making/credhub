@@ -43,12 +43,11 @@ public class NamedCertificateAuthorityTest {
       subject = new NamedCertificateAuthority("Foo");
       subject.setCertificate("cert");
       subject.setPrivateKey("priv");
-      subject.setType("root");
+      subject.setCertificateAuthorityType("root");
     });
 
     afterEach(() -> {
       jdbcTemplate.execute("delete from named_secret");
-      jdbcTemplate.execute("delete from named_certificate_authority");
       jdbcTemplate.execute("delete from encryption_key_canary");
     });
 
@@ -99,14 +98,17 @@ public class NamedCertificateAuthorityTest {
         subject.setUuid(uuid);
         subject.setVersionCreatedAt(frozenTime);
         subject.setEncryptionKeyUuid(encryptionKeyUuid);
+        subject.setCertificateAuthorityType("fake-ca-type");
 
         NamedCertificateAuthority copy = new NamedCertificateAuthority();
         subject.copyInto(copy);
 
         assertThat(copy.getName(), equalTo("name"));
+        assertThat(copy.getCertificate(), equalTo("fake-certificate"));
         assertThat(copy.getEncryptedValue(), equalTo("fake-private-key".getBytes()));
         assertThat(copy.getNonce(), equalTo("fake-nonce".getBytes()));
         assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
+        assertThat(copy.getCertificateAuthorityType(), equalTo("fake-ca-type"));
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));
         assertThat(copy.getVersionCreatedAt(), not(equalTo(frozenTime)));

@@ -122,7 +122,7 @@ public class CAGeneratorRequestTranslatorTest {
       });
 
       it("sets appropriate fields on the entity", () -> {
-        assertThat(certificateAuthority.getType(), equalTo("root"));
+        assertThat(certificateAuthority.getCertificateAuthorityType(), equalTo("root"));
         assertThat(certificateAuthority.getCertificate(), equalTo("fake-certificate"));
         assertThat(certificateAuthority.getPrivateKey(), equalTo("fake-private-key"));
       });

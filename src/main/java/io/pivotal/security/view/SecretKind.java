@@ -26,6 +26,13 @@ public enum SecretKind implements SecretKindFromString {
       return mapping::certificate;
     }
   },
+  CERTIFICATE_AUTHORITY {
+    @Override
+    public <T, E extends Throwable> CheckedFunction<T, E> lift(CheckedMapping<T, E> mapping) {
+      Objects.requireNonNull(mapping);
+      return mapping::certificateAuthority;
+    }
+  },
   SSH {
     @Override
     public <T, E extends Throwable> CheckedFunction<T, E> lift(CheckedMapping<T, E> mapping) {
@@ -47,6 +54,7 @@ public enum SecretKind implements SecretKindFromString {
     T value(T t) throws E;
     T password(T t) throws E;
     T certificate(T t) throws E;
+    T certificateAuthority(T t) throws E;
     T ssh(T t) throws E;
     T rsa(T t) throws E;
   }

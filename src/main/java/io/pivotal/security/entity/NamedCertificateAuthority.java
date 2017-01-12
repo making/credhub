@@ -1,88 +1,41 @@
 package io.pivotal.security.entity;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import io.pivotal.security.view.SecretKind;
 
 import javax.persistence.Column;
-import javax.persistence.Convert;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Table;
-import java.time.Instant;
-import java.util.UUID;
-
-import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
-import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
-@Table(name = "NamedCertificateAuthority")
-@EntityListeners(AuditingEntityListener.class)
-public class NamedCertificateAuthority implements EncryptedValueContainer {
-  @Id
-  @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
-  @GeneratedValue(generator = "uuid2")
-  @GenericGenerator(name = "uuid2", strategy = "uuid2")
-  private UUID uuid;
+@Table(name = "CertificateAuthority")
+@DiscriminatorValue(NamedCertificateAuthority.TABLE_TYPE)
+public class NamedCertificateAuthority extends NamedSecret<NamedCertificateAuthority> {
+  public static final String SECRET_TYPE = "root";
+  static final String TABLE_TYPE = "root";
 
-  @Column(unique = true, nullable = false)
-  private String name;
-
-  @Column()
-  private String type;
+  @Column(length = 255)
+  private String certificateAuthorityType;
 
   @Column(length = 7000)
   private String certificate;
-
-  @Column(length = ENCRYPTED_BYTES + NONCE_SIZE, name = "encrypted_value")
-  private byte[] encryptedValue;
-
-  @Column(length = NONCE_SIZE)
-  private byte[] nonce;
-
-  @Convert(converter = InstantMillisecondsConverter.class)
-  @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
-  @CreatedDate
-  private Instant versionCreatedAt;
-
-  @Convert(converter = InstantMillisecondsConverter.class)
-  @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
-  @CreatedDate
-  @LastModifiedDate
-  @SuppressWarnings("unused")
-  private Instant updatedAt;
-
-  @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
-  private UUID encryptionKeyUuid;
 
   @SuppressWarnings("unused")
   public NamedCertificateAuthority() {
   }
 
   public NamedCertificateAuthority(String name) {
-    this.name = name;
+    super(name);
   }
 
-  public UUID getUuid() {
-    return uuid;
+  @Override
+  public SecretKind getKind() {
+    return SecretKind.CERTIFICATE_AUTHORITY;
   }
 
-  public NamedCertificateAuthority setUuid(UUID uuid) {
-    this.uuid = uuid;
-    return this;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public NamedCertificateAuthority setName(String name) {
-    this.name = name;
-    return this;
+  @Override
+  public String getSecretType() {
+    return SECRET_TYPE;
   }
 
   public String getCertificate() {
@@ -94,29 +47,13 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
     return this;
   }
 
-  public String getType() {
-    return type;
+  public String getCertificateAuthorityType() {
+    return certificateAuthorityType;
   }
 
-  public NamedCertificateAuthority setType(String type) {
-    this.type = type;
+  public NamedCertificateAuthority setCertificateAuthorityType(String type) {
+    this.certificateAuthorityType = type;
     return this;
-  }
-
-  public byte[] getNonce() {
-    return nonce;
-  }
-
-  public void setNonce(byte[] nonce) {
-    this.nonce = nonce;
-  }
-
-  public byte[] getEncryptedValue() {
-    return encryptedValue;
-  }
-
-  public void setEncryptedValue(byte[] encryptedValue) {
-    this.encryptedValue = encryptedValue;
   }
 
   public String getPrivateKey() {
@@ -128,28 +65,9 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
     return this;
   }
 
-  public UUID getEncryptionKeyUuid() {
-    return encryptionKeyUuid;
-  }
-
-  public void setEncryptionKeyUuid(UUID encryptionKeyUuid) {
-    this.encryptionKeyUuid = encryptionKeyUuid;
-  }
-
-  public Instant getVersionCreatedAt() {
-    return versionCreatedAt;
-  }
-
-  public NamedCertificateAuthority setVersionCreatedAt(Instant versionCreatedAt) {
-    this.versionCreatedAt = versionCreatedAt;
-    return this;
-  }
-
-  public void copyInto(NamedCertificateAuthority copy) {
-    copy.setName(name);
+  @Override
+  void copyIntoImpl(NamedCertificateAuthority copy) {
     copy.setCertificate(certificate);
-    copy.setEncryptedValue(encryptedValue);
-    copy.setNonce(nonce);
-    copy.setEncryptionKeyUuid(encryptionKeyUuid);
+    copy.setCertificateAuthorityType(certificateAuthorityType);
   }
 }

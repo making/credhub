@@ -37,7 +37,7 @@ public class CAGeneratorRequestTranslator implements RequestTranslator<NamedCert
     CertificateAuthority certificateAuthority = certificateGenerator.generateSecret(parameters);
 
     namedCA
-        .setType(certificateAuthority.getType())
+        .setCertificateAuthorityType(certificateAuthority.getType())
         .setCertificate(certificateAuthority.getCertificate())
         .setPrivateKey(certificateAuthority.getPrivateKey());
   }

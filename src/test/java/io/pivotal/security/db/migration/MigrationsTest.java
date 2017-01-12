@@ -15,10 +15,10 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-
-import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -64,7 +64,6 @@ public class MigrationsTest {
       flyway.migrate();
 
       jdbcTemplate.execute("delete from named_secret");
-      jdbcTemplate.execute("delete from named_certificate_authority");
       jdbcTemplate.execute("delete from encryption_key_canary");
     });
   }

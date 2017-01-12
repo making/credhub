@@ -1,8 +1,6 @@
 package io.pivotal.security.service;
 
-import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.SecretEncryptionHelper;
@@ -16,17 +14,14 @@ import java.util.List;
 public class EncryptionKeyRotator {
   private final SecretEncryptionHelper secretEncryptionHelper;
   private final SecretDataService secretDataService;
-  private final CertificateAuthorityDataService certificateAuthorityDataService;
   private final Logger logger;
 
   EncryptionKeyRotator(
       SecretEncryptionHelper secretEncryptionHelper,
-      SecretDataService secretDataService,
-      CertificateAuthorityDataService certificateAuthorityDataService
+      SecretDataService secretDataService
   ) {
     this.secretEncryptionHelper = secretEncryptionHelper;
     this.secretDataService = secretDataService;
-    this.certificateAuthorityDataService = certificateAuthorityDataService;
     this.logger = LogManager.getLogger(this.getClass());
 
     rotate();
@@ -49,12 +44,6 @@ public class EncryptionKeyRotator {
     for (NamedPasswordSecret password : passwordsWithParametersEncryptedByOldEncryptionKey) {
       secretEncryptionHelper.rotate(password);
       secretDataService.save(password);
-    }
-
-    List<NamedCertificateAuthority> certificateAuthoritiesEncryptedByOldKey = certificateAuthorityDataService.findAllNotEncryptedByActiveKey();
-    for (NamedCertificateAuthority certificateAuthority : certificateAuthoritiesEncryptedByOldKey) {
-      secretEncryptionHelper.rotate(certificateAuthority);
-      certificateAuthorityDataService.save(certificateAuthority);
     }
 
     logger.info("Finished encryption key rotation");
