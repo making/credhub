@@ -158,7 +158,7 @@ public class SecretsController {
         selectLookupFunction(current),
         request,
         authentication,
-        (namedSecrets) -> DataResponse.fromEntity(namedSecrets, SecretView::fromEntity)
+        (namedSecrets) -> DataResponse.fromEntity(namedSecrets, SecretView::new)
     );
   }
 

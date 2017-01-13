@@ -10,19 +10,23 @@ import io.pivotal.security.entity.NamedStringSecret;
 import java.time.Instant;
 import java.util.UUID;
 
-public class SecretView extends BaseView {
+public abstract class SecretView<Z extends NamedSecret> {
 
   private final UUID uuid;
   private final String name;
   private final String type;
-  private final Object value;
+  final private Instant versionCreatedAt;
 
-  SecretView(Instant versionCreatedAt, UUID uuid, String name, String type, Object value) {
-    super(versionCreatedAt);
-    this.uuid = uuid;
-    this.name = name;
-    this.type = type;
-    this.value = value;
+  public SecretView(Z secret) {
+    this.versionCreatedAt = secret.getVersionCreatedAt();
+    this.uuid = secret.getUuid();
+    this.name = secret.getName();
+    this.type = secret.getSecretType();
+  }
+
+  @JsonProperty("version_created_at")
+  public Instant getVersionCreatedAt() {
+    return versionCreatedAt;
   }
 
   @JsonProperty
@@ -41,9 +45,10 @@ public class SecretView extends BaseView {
   }
 
   @JsonProperty("value")
-  public Object getValue() {
-    return value;
-  }
+  abstract Object getValue();
+//  public Object getValue() {
+//    return value;
+//  }
 
   public static SecretView fromEntity(NamedSecret namedSecret) {
     SecretView result;

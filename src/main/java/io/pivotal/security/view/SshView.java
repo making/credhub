@@ -4,13 +4,15 @@ import io.pivotal.security.entity.NamedSshSecret;
 import io.pivotal.security.secret.SshKey;
 
 class SshView extends SecretView {
+  private final SshKey value;
+
   SshView(NamedSshSecret namedSshSecret) {
-    super(
-        namedSshSecret.getVersionCreatedAt(),
-        namedSshSecret.getUuid(),
-        namedSshSecret.getName(),
-        namedSshSecret.getSecretType(),
-        new SshKey(namedSshSecret.getPublicKey(), namedSshSecret.getPrivateKey())
-    );
+    super(namedSshSecret);
+    this.value = new SshKey(namedSshSecret.getPublicKey(), namedSshSecret.getPrivateKey());
+  }
+
+  @Override
+  SshKey getValue() {
+    return value;
   }
 }
