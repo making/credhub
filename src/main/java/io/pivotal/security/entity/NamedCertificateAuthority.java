@@ -12,7 +12,7 @@ import javax.persistence.Table;
 @DiscriminatorValue(NamedCertificateAuthority.TABLE_TYPE)
 public class NamedCertificateAuthority extends NamedSecret<NamedCertificateAuthority> {
   public static final String SECRET_TYPE = "root";
-  static final String TABLE_TYPE = "root";
+  static final String TABLE_TYPE = "certificate_authority";
 
   @Column(length = 255)
   private String certificateAuthorityType;
