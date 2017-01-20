@@ -8,6 +8,7 @@ import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.SecretEncryptionHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -28,17 +29,16 @@ public class EncryptionKeyRotator {
     this.secretDataService = secretDataService;
     this.certificateAuthorityDataService = certificateAuthorityDataService;
     this.logger = LogManager.getLogger(this.getClass());
-
-    rotate();
   }
 
   // Synchronized to ensure that nothing happens until everything has been rotated.
   // This is the naive version!!!
   // Future stories should improve this (performance, error handling, etc.).
-  private synchronized void rotate() {
-    List<NamedSecret> secretsEncryptedByOldKey = secretDataService.findAllNotEncryptedByActiveKey();
-
+  //
+  @Async
+  public synchronized void rotate() {
     logger.info("Started encryption key rotation");
+    List<NamedSecret> secretsEncryptedByOldKey = secretDataService.findAllNotEncryptedByActiveKey();
 
     for (NamedSecret secret : secretsEncryptedByOldKey) {
       secretEncryptionHelper.rotate(secret);

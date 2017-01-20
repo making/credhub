@@ -8,11 +8,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.pivotal.security.config.AuthServerProperties;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.entity.JpaAuditingHandlerRegistrar;
+import io.pivotal.security.service.EncryptionKeyRotator;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -36,7 +38,13 @@ public class CredentialManagerApp {
   private final DateTimeFormatter TIMESTAMP_FORMAT = ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
   public static void main(String[] args) {
-    SpringApplication.run(CredentialManagerApp.class, args);
+    final ConfigurableApplicationContext configurableApplicationContext = SpringApplication.run(CredentialManagerApp.class, args);
+    runRotationsInBackground(configurableApplicationContext);
+  }
+
+  public static void runRotationsInBackground(ConfigurableApplicationContext configurableApplicationContext) {
+    EncryptionKeyRotator rotator = configurableApplicationContext.getBean(EncryptionKeyRotator.class);
+    rotator.rotate();
   }
 
   @Bean
