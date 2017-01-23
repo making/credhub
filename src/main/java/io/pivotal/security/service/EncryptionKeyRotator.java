@@ -6,12 +6,12 @@ import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.SecretEncryptionHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.domain.Slice;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
-import java.util.List;
 
 @Component
 @EnableAsync
@@ -59,11 +59,19 @@ public class EncryptionKeyRotator {
 //    namedSecretStream = secretDataService.streamAllNotEncryptedByActiveKey();
 //    logger.warn("size after: " + namedSecretStream.count());
 
-    List<NamedSecret> secretsEncryptedByOldKey = secretDataService.findAllNotEncryptedByActiveKey();
-    for (NamedSecret secret : secretsEncryptedByOldKey) {
-      secretEncryptionHelper.rotate(secret);
-      secretDataService.save(secret);
+    Slice<NamedSecret> secretsEncryptedByOldKey = secretDataService.findAllNotEncryptedByActiveKey();
+    while (secretsEncryptedByOldKey.hasContent()) {
+      secretsEncryptedByOldKey.getContent().forEach(secret -> {
+        secretEncryptionHelper.rotate(secret);
+        secretDataService.save(secret);
+      });
+      secretsEncryptedByOldKey = secretDataService.findAllNotEncryptedByActiveKey();
     }
+//    List<NamedSecret> secretsEncryptedByOldKey = secretDataService.findAllNotEncryptedByActiveKey();
+//    for (NamedSecret secret : secretsEncryptedByOldKey) {
+//      secretEncryptionHelper.rotate(secret);
+//      secretDataService.save(secret);
+//    }
 
 //    List<NamedPasswordSecret> passwordsWithParametersEncryptedByOldEncryptionKey = secretDataService.findAllPasswordsWithParametersNotEncryptedByActiveKey();
 //    for (NamedPasswordSecret password : passwordsWithParametersEncryptedByOldEncryptionKey) {

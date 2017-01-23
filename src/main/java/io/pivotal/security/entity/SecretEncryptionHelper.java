@@ -99,6 +99,11 @@ public class SecretEncryptionHelper {
 
   public void rotate(NamedSecret secret) {
     refreshEncryptedValue(secret, retrieveClearTextValue(secret));
+
+    if (NamedPasswordSecret.class.isInstance(secret)) {
+      NamedPasswordSecret password = (NamedPasswordSecret) secret;
+      refreshEncryptedGenerationParameters(password, retrieveGenerationParameters(password));
+    }
   }
 
   public void rotatePasswordParameters(NamedPasswordSecret password) {

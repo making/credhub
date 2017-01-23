@@ -7,8 +7,8 @@ import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionKeyService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +16,8 @@ import javax.persistence.EntityManager;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
+import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
 
 @Service
 public class SecretDataService {
@@ -121,9 +123,11 @@ public class SecretDataService {
     );
   }
 
-  public List<NamedSecret> findAllNotEncryptedByActiveKey() {
-    Page<NamedSecret> page = secretRepository.findByEncryptionKeyUuidNot(encryptionKeyService.getActiveEncryptionKeyUuid(), new PageRequest(0, 20));
-    return page.getContent();
+  public Slice<NamedSecret> findAllNotEncryptedByActiveKey() {
+    return secretRepository.findByEncryptionKeyUuidNot(encryptionKeyService.getActiveEncryptionKeyUuid(), new PageRequest(0, BATCH_SIZE));
+//    Stream<NamedSecret> stream = StreamSupport.
+//    Spliterator<NamedSecret> spliterator = Spliterators.spliterator()
+//    return page.getContent();
   }
 
 //  public Stream<NamedSecret> streamAllNotEncryptedByActiveKey() {
