@@ -11,16 +11,16 @@ encryption:
 spring:
   datasource:
     # postgres/h2
-    username: pivotal
+#    username: pivotal
     # mysql
-#    username: root
+    username: root
     password:
 #    url: jdbc:postgresql://localhost:5432/credhub
-#    url: jdbc:mysql://localhost:3306/credhub
+    url: jdbc:mysql://localhost:3306/credhub
 
 flyway:
   # last value is either postgres/h2/mysql
-  locations: classpath:/db/migration/common,classpath:/db/migration/h2
+  locations: classpath:/db/migration/common,classpath:/db/migration/mysql
 
 security:
   oauth2:

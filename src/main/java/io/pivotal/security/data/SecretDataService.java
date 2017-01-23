@@ -1,6 +1,5 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedSecretImpl;
 import io.pivotal.security.repository.PasswordRepository;
@@ -8,9 +7,12 @@ import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionKeyService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -44,18 +46,21 @@ public class SecretDataService {
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyService encryptionKeyService;
   private final PasswordRepository passwordRepository;
+  private final EntityManager entityManager;
 
   @Autowired
   SecretDataService(
       SecretRepository secretRepository,
       PasswordRepository passwordRepository,
       JdbcTemplate jdbcTemplate,
-      EncryptionKeyService encryptionKeyService
+      EncryptionKeyService encryptionKeyService,
+      EntityManager entityManager
   ) {
     this.secretRepository = secretRepository;
     this.jdbcTemplate = jdbcTemplate;
     this.encryptionKeyService = encryptionKeyService;
     this.passwordRepository = passwordRepository;
+    this.entityManager = entityManager;
   }
 
   public <Z extends NamedSecret> Z save(Z namedSecret) {
@@ -117,10 +122,57 @@ public class SecretDataService {
   }
 
   public List<NamedSecret> findAllNotEncryptedByActiveKey() {
-    return secretRepository.findByEncryptionKeyUuidNot(encryptionKeyService.getActiveEncryptionKeyUuid());
+    Page<NamedSecret> page = secretRepository.findByEncryptionKeyUuidNot(encryptionKeyService.getActiveEncryptionKeyUuid(), new PageRequest(0, 20));
+    return page.getContent();
   }
 
-  public List<NamedPasswordSecret> findAllPasswordsWithParametersNotEncryptedByActiveKey() {
-    return passwordRepository.findByParameterEncryptionKeyUuidNot(encryptionKeyService.getActiveEncryptionKeyUuid());
-  }
+//  public Stream<NamedSecret> streamAllNotEncryptedByActiveKey() {
+//    StatelessSession session = ((Session) entityManager.getDelegate()).getSessionFactory().openStatelessSession();
+////    Connection connection;
+////    try {
+////      connection = jdbcTemplate.getDataSource().getConnection();
+////      PreparedStatement statement = connection.prepareStatement("select * from named_secret where encryption_key_uuid is not ?");
+////      statement.setObject(1, encryptionKeyService.getActiveEncryptionKeyUuid());
+////      session.createSQLQuery("select * from named_secret where encryption_key_uuid is not ?").addEntity(encryptionKeyService.getActiveEncryptionKeyUuid());
+////    } catch (SQLException e) {
+////      throw new RuntimeException(e);
+////    }
+//    final Query query = session.createSQLQuery("select * from named_secret where encryption_key_uuid <> :foo")
+//        .setParameter("foo", encryptionKeyService.getActiveEncryptionKeyUuid());
+////    final org.hibernate.Query query = session.createQuery("select * from named_secret where encryption_key_uuid is not ?");
+////    query.setParameter("encryptionKeyUuid", encryptionKeyService.getActiveEncryptionKeyUuid());
+//    final ScrollableResults scroll = query.scroll(ScrollMode.FORWARD_ONLY);
+//    final Spliterator<NamedSecret> spliterator = Spliterators.spliteratorUnknownSize(
+//        new ScrollableResultIterator(scroll),
+//        Spliterator.DISTINCT | Spliterator.NONNULL |
+//            Spliterator.CONCURRENT | Spliterator.IMMUTABLE
+//    );
+//    return StreamSupport.stream(spliterator, false).onClose(scroll::close);
+//  }
+//
+//  public List<NamedPasswordSecret> findAllPasswordsWithParametersNotEncryptedByActiveKey() {
+//    return passwordRepository.findByParameterEncryptionKeyUuidNot(encryptionKeyService.getActiveEncryptionKeyUuid());
+//  }
+//
+//  private static class ScrollableResultIterator implements Iterator<NamedSecret> {
+//    private final ScrollableResults results;
+//
+//    ScrollableResultIterator(ScrollableResults results) {
+//      this.results = results;
+//    }
+//
+//    @Override
+//    public boolean hasNext() {
+//      return results.next();
+//    }
+//
+//    @Override
+//    public NamedSecret next() {
+//      NamedSecret secret = new NamedSecretImpl();
+//      ((ScrollableResultsImpl) results).getResultSet()
+//      //      secret.setName(results.getString("name"));
+//      int i = 42;
+//      return (NamedSecret) results.get(0);
+//    }
+//  }
 }

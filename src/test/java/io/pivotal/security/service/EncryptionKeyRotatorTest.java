@@ -10,6 +10,8 @@ import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.SecretEncryptionHelper;
 import org.junit.runner.RunWith;
 
+import javax.persistence.EntityManager;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static java.util.Arrays.asList;
@@ -36,11 +38,14 @@ public class EncryptionKeyRotatorTest {
   private NamedPasswordSecret passwordWithOldParameters2;
 
 
+  private EntityManager entityManager;
+
   {
     beforeEach(() -> {
       secretEncryptionHelper = mock(SecretEncryptionHelper.class);
       secretDataService = mock(SecretDataService.class);
       certificateAuthorityDataService = mock(CertificateAuthorityDataService.class);
+      entityManager = mock(EntityManager.class);
 
       certificateSecret = new NamedCertificateSecret();
       passwordSecretUnsaved1 = new NamedPasswordSecret();
@@ -77,7 +82,7 @@ public class EncryptionKeyRotatorTest {
       when(certificateAuthorityDataService.findAllNotEncryptedByActiveKey())
           .thenReturn(asList(certificateAuthority1, certificateAuthority2));
 
-      new EncryptionKeyRotator(secretEncryptionHelper, secretDataService, certificateAuthorityDataService);
+      new EncryptionKeyRotator(secretEncryptionHelper, secretDataService, certificateAuthorityDataService, entityManager);
     });
 
     it("should rotate all the secrets, CAs, and password params that were encrypted with an old key", () -> {
