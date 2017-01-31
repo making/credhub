@@ -7,7 +7,6 @@ import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.util.CheckedFunction;
 import io.pivotal.security.view.SecretKind;
 import org.mockito.Mock;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.function.Supplier;
@@ -52,7 +51,7 @@ public abstract class AbstractNamedSecretHandlerTestingUtil {
         NamedSecret namedSecret = mapFunction.apply(null);
         verify(expectedTranslator).populateEntityFromJson(isA(clazz), eq(documentContext));
         assertThat(namedSecret, instanceOf(clazz));
-        assertThat(namedSecret.getName(), equalTo("secret-path"));
+        assertThat(namedSecret.getSecretName(), equalTo("secret-path"));
       });
 
       it("updates the secret", () -> {

@@ -116,7 +116,7 @@ public class SecretsControllerGenerateTest {
           secret.setUuid(uuid);
           secret.setVersionCreatedAt(frozenTime);
           return secret;
-        }).when(secretDataService).save(any(NamedSecret.class));
+        }).when(secretDataService).upsert(any(NamedSecret.class));
       });
 
       it("for a new value secret should return an error message", () -> {
@@ -170,7 +170,7 @@ public class SecretsControllerGenerateTest {
 
         it("asks the data service to persist the secret", () -> {
           ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
-          verify(secretDataService, times(1)).save(argumentCaptor.capture());
+          verify(secretDataService, times(1)).upsert(argumentCaptor.capture());
 
           NamedPasswordSecret newPassword = argumentCaptor.getValue();
 
@@ -263,7 +263,7 @@ public class SecretsControllerGenerateTest {
           });
 
           it("should not persist the secret", () -> {
-            verify(secretDataService, times(0)).save(any(NamedSecret.class));
+            verify(secretDataService, times(0)).upsert(any(NamedSecret.class));
           });
 
           it("persists an audit entry", () -> {

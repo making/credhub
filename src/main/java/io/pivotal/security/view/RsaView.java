@@ -8,7 +8,7 @@ public class RsaView extends SecretView {
     super(
         namedRsaSecret.getVersionCreatedAt(),
         namedRsaSecret.getUuid(),
-        namedRsaSecret.getName(),
+        namedRsaSecret.getSecretName(),
         namedRsaSecret.getSecretType(),
         new RsaKey(namedRsaSecret.getPublicKey(), namedRsaSecret.getPrivateKey())
     );

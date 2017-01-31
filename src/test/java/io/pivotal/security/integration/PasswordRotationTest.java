@@ -88,7 +88,7 @@ public class PasswordRotationTest {
       password.setParametersNonce(parameterEncryption.nonce);
       password.setEncryptionKeyUuid(oldCanary.getUuid());
 
-      secretDataService.save(password);
+      secretDataService.upsert(password);
 
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     });

@@ -6,6 +6,7 @@ import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,27 +21,27 @@ import java.util.UUID;
 @Service
 public class SecretDataService {
   private static final String FIND_MOST_RECENT_BY_SUBSTRING_QUERY =
-    "SELECT DISTINCT " +
-      "name, " +
-      "version_created_at " +
-    "FROM " +
-      "named_secret " +
-    "INNER JOIN ( " +
-      "SELECT " +
-        "UPPER(name) AS inner_name, " +
-        "MAX(version_created_at) AS inner_version_created_at " +
-      "FROM " +
-        "named_secret " +
-      "GROUP BY " +
-        "UPPER(name) " +
-    ") AS most_recent " +
-    "ON " +
-      "named_secret.version_created_at = most_recent.inner_version_created_at " +
-    "AND " +
-      "UPPER(named_secret.name) = most_recent.inner_name " +
-    "WHERE " +
-      "UPPER(named_secret.name) LIKE UPPER(?) OR UPPER(named_secret.name) LIKE UPPER(?) " +
-    "ORDER BY version_created_at DESC";
+      "SELECT DISTINCT " +
+          "secret_metadata_name, " +
+          "version_created_at " +
+          "FROM " +
+          "named_secret " +
+          "INNER JOIN ( " +
+          "SELECT " +
+          "UPPER(secret_metadata_name) AS inner_name, " +
+          "MAX(version_created_at) AS inner_version_created_at " +
+          "FROM " +
+          "named_secret " +
+          "GROUP BY " +
+          "UPPER(secret_metadata_name) " +
+          ") AS most_recent " +
+          "ON " +
+          "named_secret.version_created_at = most_recent.inner_version_created_at " +
+          "AND " +
+          "UPPER(named_secret.secret_metadata_name) = most_recent.inner_name " +
+          "WHERE " +
+          "UPPER(named_secret.secret_metadata_name) LIKE UPPER(?) OR UPPER(named_secret.secret_metadata_name) LIKE UPPER(?) " +
+          "ORDER BY version_created_at DESC";
 
   private final SecretRepository secretRepository;
   private final JdbcTemplate jdbcTemplate;
@@ -57,11 +58,22 @@ public class SecretDataService {
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
   }
 
-  public <Z extends NamedSecret> Z save(Z namedSecret) {
+  public <Z extends NamedSecret> Z upsert(Z namedSecret) {
     if (namedSecret.getEncryptionKeyUuid() == null) {
       namedSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
     }
     return secretRepository.saveAndFlush(namedSecret);
+  }
+
+  public <Z extends NamedSecret> Z createOrGet(Z namedSecret) {
+    if (namedSecret.getEncryptionKeyUuid() == null) {
+      namedSecret.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
+    }
+    try {
+      return secretRepository.saveAndFlush(namedSecret);
+    } catch (DataIntegrityViolationException e) {
+      return (Z) findMostRecent(namedSecret.getSecretName());
+    }
   }
 
   public List<String> findAllPaths() {
@@ -69,7 +81,7 @@ public class SecretDataService {
   }
 
   public NamedSecret findMostRecent(String name) {
-    return secretRepository.findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(name);
+    return secretRepository.findFirstBySecretMetadataNameIgnoreCaseOrderByVersionCreatedAtDesc(name);
   }
 
   public NamedSecret findByUuid(String uuid) {
@@ -90,11 +102,11 @@ public class SecretDataService {
   }
 
   public List<NamedSecret> delete(String name) {
-    return secretRepository.deleteByNameIgnoreCase(name);
+    return secretRepository.deleteBySecretMetadataNameIgnoreCase(name);
   }
 
   public List<NamedSecret> findAllByName(String name) {
-    return secretRepository.findAllByNameIgnoreCase(name);
+    return secretRepository.findAllBySecretMetadataNameIgnoreCase(name);
   }
 
   private List<NamedSecret> findMostRecentLikeSubstrings(String substring1, String substring2) {
@@ -107,7 +119,7 @@ public class SecretDataService {
       (rowSet, rowNum) -> {
         NamedSecret secret = new NamedSecretImpl();
 
-        secret.setName(rowSet.getString("name"));
+        secret.setSecretName(rowSet.getString("secret_metadata_name"));
         secret.setVersionCreatedAt(Instant.ofEpochMilli(rowSet.getLong("version_created_at")));
 
         return secret;

@@ -121,7 +121,7 @@ public class SecretsController {
       namedSecrets = secretDataService.delete(nameToDelete);
 
       if (namedSecrets.size() > 0) {
-        auditRecorder.setCredentialName(namedSecrets.get(0).getName());
+        auditRecorder.setCredentialName(namedSecrets.get(0).getSecretName());
         return new ResponseEntity(HttpStatus.OK);
       } else {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
@@ -199,7 +199,7 @@ public class SecretsController {
       if (namedSecrets.isEmpty()) {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       } else {
-        auditRecordBuilder.setCredentialName(namedSecrets.get(0).getName());
+        auditRecordBuilder.setCredentialName(namedSecrets.get(0).getSecretName());
         return new ResponseEntity<>(secretPresenter.apply(namedSecrets), HttpStatus.OK);
       }
     });
@@ -287,12 +287,12 @@ public class SecretsController {
           SecretKindFromString.fromString(requestedSecretType));
       if (existingNamedSecret != null && requestedSecretType != null && !existingNamedSecret.getSecretType().equals(requestedSecretType))
         throw new ParameterizedValidationException("error.type_mismatch");
-      secretPath = existingNamedSecret == null ? secretPath : existingNamedSecret.getName();
+      secretPath = existingNamedSecret == null ? secretPath : existingNamedSecret.getSecretName();
 
       NamedSecret storedNamedSecret;
       if (willWrite) {
         storedNamedSecret = secretKind.lift(namedSecretHandler.make(secretPath, parsed)).apply(existingNamedSecret);
-        storedNamedSecret = secretDataService.save(storedNamedSecret);
+        storedNamedSecret = secretDataService.upsert(storedNamedSecret);
       } else {
         // To catch invalid parameters, validate request even though we throw away the result.
         // We need to apply it to null or Hibernate may decide to save the record.

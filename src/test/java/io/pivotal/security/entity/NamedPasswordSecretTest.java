@@ -109,7 +109,7 @@ public class NamedPasswordSecretTest {
         NamedPasswordSecret copy = new NamedPasswordSecret();
         subject.copyInto(copy);
 
-        assertThat(copy.getName(), equalTo("foo"));
+        assertThat(copy.getSecretName(), equalTo("foo"));
         assertThat(copy.getEncryptedValue(), equalTo("value".getBytes()));
         assertThat(copy.getNonce(), equalTo("nonce".getBytes()));
         assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));

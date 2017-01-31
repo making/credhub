@@ -6,16 +6,19 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -44,8 +47,11 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private UUID uuid;
 
-  @Column(unique = true, nullable = false)
-  private String name;
+  @ManyToOne(cascade = CascadeType.ALL, optional = false)
+  @ForeignKey()
+//  @JoinColumn(name = "name")
+//  @Column(unique = true, nullable = false)
+  private SecretMetadata secretMetadata;
 
   @Column(length = ENCRYPTED_BYTES + NONCE_SIZE, name = "encrypted_value")
   private byte[] encryptedValue;
@@ -73,7 +79,7 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   }
 
   public NamedSecret(String name) {
-    setName(name);
+    setSecretName(name);
   }
 
   public UUID getUuid() {
@@ -85,12 +91,15 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
     return (Z) this;
   }
 
-  public String getName() {
-    return name;
+  public String getSecretName() {
+    return secretMetadata != null ? secretMetadata.getName() : null;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setSecretName(String name) {
+    if (this.secretMetadata == null) {
+      this.secretMetadata = new SecretMetadata();
+      this.secretMetadata.setName(name);
+    }
   }
 
   public byte[] getEncryptedValue() {
@@ -130,6 +139,14 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
     return (Z) this;
   }
 
+  public SecretMetadata getSecretMetadata() {
+    return secretMetadata;
+  }
+
+  public void setSecretMetadata(SecretMetadata secretMetadata) {
+    this.secretMetadata = secretMetadata;
+  }
+
   public static Stream<String> fullHierarchyForPath(String path) {
     String[] components = path.split("/");
     if (components.length > 1) {
@@ -149,7 +166,7 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   abstract void copyIntoImpl(Z copy);
 
   public void copyInto(Z copy) {
-    copy.setName(name);
+    copy.setSecretMetadata(secretMetadata);
     copy.setEncryptedValue(encryptedValue);
     copy.setNonce(nonce);
     copy.setEncryptionKeyUuid(encryptionKeyUuid);

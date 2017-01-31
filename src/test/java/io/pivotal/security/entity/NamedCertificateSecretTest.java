@@ -14,6 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -24,10 +28,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsNull.notNullValue;
-
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -225,7 +225,7 @@ public class NamedCertificateSecretTest {
         NamedCertificateSecret copy = new NamedCertificateSecret();
         subject.copyInto(copy);
 
-        assertThat(copy.getName(), equalTo("name"));
+        assertThat(copy.getSecretName(), equalTo("name"));
         assertThat(copy.getCaName(), equalTo("ca-name"));
         assertThat(copy.getCa(), equalTo("fake-ca"));
         assertThat(copy.getEncryptedValue(), equalTo("fake-private-key".getBytes()));

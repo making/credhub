@@ -25,7 +25,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public NamedSecret findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(String name) {
+  public NamedSecret findFirstBySecretMetadataNameIgnoreCaseOrderByVersionCreatedAtDesc(String name) {
     throw new UnsupportedOperationException();
   }
 
@@ -35,7 +35,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public List<NamedSecret> deleteByNameIgnoreCase(String name) {
+  public List<NamedSecret> deleteBySecretMetadataNameIgnoreCase(String name) {
     throw new UnsupportedOperationException();
   }
 
@@ -78,7 +78,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public List<NamedSecret> findAllByNameIgnoreCase(String name) {
+  public List<NamedSecret> findAllBySecretMetadataNameIgnoreCase(String name) {
     throw new UnsupportedOperationException();
   }
 

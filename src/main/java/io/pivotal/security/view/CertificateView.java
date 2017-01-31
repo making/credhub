@@ -8,7 +8,7 @@ class CertificateView extends SecretView {
     super(
         namedCertificateSecret.getVersionCreatedAt(),
         namedCertificateSecret.getUuid(),
-        namedCertificateSecret.getName(),
+        namedCertificateSecret.getSecretName(),
         namedCertificateSecret.getSecretType(),
         new Certificate(namedCertificateSecret.getCa(), namedCertificateSecret.getCertificate(), namedCertificateSecret.getPrivateKey())
     );

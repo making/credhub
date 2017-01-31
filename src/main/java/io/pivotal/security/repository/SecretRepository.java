@@ -14,11 +14,11 @@ import static com.google.common.collect.Lists.newArrayList;
 public interface SecretRepository extends JpaRepository<NamedSecret, UUID> {
   int SECRET_BATCH_SIZE = 50;
 
-  NamedSecret findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(String name);
+  NamedSecret findFirstBySecretMetadataNameIgnoreCaseOrderByVersionCreatedAtDesc(String name);
   NamedSecret findOneByUuid(UUID uuid);
 
-  List<NamedSecret> deleteByNameIgnoreCase(String name);
-  List<NamedSecret> findAllByNameIgnoreCase(String name);
+  List<NamedSecret> deleteBySecretMetadataNameIgnoreCase(String name);
+  List<NamedSecret> findAllBySecretMetadataNameIgnoreCase(String name);
   Slice<NamedSecret> findByEncryptionKeyUuidNot(UUID encryptionKeyUuid, Pageable page);
 
   default List<String> findAllPaths(Boolean findPaths) {
@@ -27,7 +27,7 @@ public interface SecretRepository extends JpaRepository<NamedSecret, UUID> {
     }
 
     return findAll().stream()
-        .map(NamedSecret::getName)
+        .map(NamedSecret::getSecretName)
         .flatMap(NamedSecret::fullHierarchyForPath)
         .distinct()
         .sorted()

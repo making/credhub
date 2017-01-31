@@ -163,7 +163,7 @@ public class SecretsControllerSetTest {
 
         doReturn(
             valueSecret
-        ).when(secretDataService).save(any(NamedValueSecret.class));
+        ).when(secretDataService).upsert(any(NamedValueSecret.class));
       });
 
       describe("via parameter in request body", () -> {
@@ -263,7 +263,7 @@ public class SecretsControllerSetTest {
         it("should return the updated value", () -> {
           ArgumentCaptor<NamedSecret> argumentCaptor = ArgumentCaptor.forClass(NamedSecret.class);
 
-          verify(secretDataService, times(1)).save(argumentCaptor.capture());
+          verify(secretDataService, times(1)).upsert(argumentCaptor.capture());
 
           // Because the data service mutates the original entity, the UUID should be set
           // on the original object during the save.
@@ -335,7 +335,7 @@ public class SecretsControllerSetTest {
                 "}"))
             .andExpect(status().isOk());
         ArgumentCaptor<NamedPasswordSecret> captor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
-        verify(secretDataService).save(captor.capture());
+        verify(secretDataService).upsert(captor.capture());
         assertThat(captor.getValue().getEncryptedGenerationParameters(), nullValue());
       });
     });
@@ -355,7 +355,7 @@ public class SecretsControllerSetTest {
     it("asks the data service to persist the secret", () -> {
       ArgumentCaptor<NamedValueSecret> argumentCaptor = ArgumentCaptor.forClass(NamedValueSecret.class);
 
-      verify(secretDataService, times(1)).save(argumentCaptor.capture());
+      verify(secretDataService, times(1)).upsert(argumentCaptor.capture());
 
       NamedValueSecret namedValueSecret = argumentCaptor.getValue();
       assertThat(namedValueSecret.getValue(), equalTo(secretValue));
@@ -473,7 +473,7 @@ public class SecretsControllerSetTest {
     valueSecret.setValue(value);
     doReturn(
         valueSecret
-    ).when(secretDataService).save(any(NamedValueSecret.class));
+    ).when(secretDataService).upsert(any(NamedValueSecret.class));
 
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
         .accept(APPLICATION_JSON)

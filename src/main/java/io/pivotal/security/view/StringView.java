@@ -7,7 +7,7 @@ class StringView extends SecretView {
     super(
         namedStringSecret.getVersionCreatedAt(),
         namedStringSecret.getUuid(),
-        namedStringSecret.getName(),
+        namedStringSecret.getSecretName(),
         namedStringSecret.getSecretType(),
         namedStringSecret.getValue()
     );

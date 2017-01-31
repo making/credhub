@@ -8,7 +8,7 @@ class SshView extends SecretView {
     super(
         namedSshSecret.getVersionCreatedAt(),
         namedSshSecret.getUuid(),
-        namedSshSecret.getName(),
+        namedSshSecret.getSecretName(),
         namedSshSecret.getSecretType(),
         new SshKey(namedSshSecret.getPublicKey(), namedSshSecret.getPrivateKey())
     );

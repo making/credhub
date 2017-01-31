@@ -14,6 +14,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -21,11 +26,6 @@ import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvid
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
-
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -78,7 +78,7 @@ public class SecretRepositoryTest {
       entity.setEncryptionKeyUuid(canaryUuid);
 
       subject.save(entity);
-      NamedCertificateSecret certificateSecret = (NamedCertificateSecret) subject.findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(secretName);
+      NamedCertificateSecret certificateSecret = (NamedCertificateSecret) subject.findFirstBySecretMetadataNameIgnoreCaseOrderByVersionCreatedAtDesc(secretName);
       assertThat(certificateSecret.getCa().length(), equalTo(7000));
       assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
       assertThat(certificateSecret.getEncryptedValue(), equalTo(encryptedValue));
@@ -96,7 +96,7 @@ public class SecretRepositoryTest {
       entity.setEncryptionKeyUuid(canaryUuid);
 
       subject.save(entity);
-      assertThat((subject.findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(secretName)).getEncryptedValue().length, equalTo(7016));
+      assertThat((subject.findFirstBySecretMetadataNameIgnoreCaseOrderByVersionCreatedAtDesc(secretName)).getEncryptedValue().length, equalTo(7016));
     });
   }
 }

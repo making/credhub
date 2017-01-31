@@ -119,7 +119,7 @@ public class SecretsControllerRegenerateTest {
           newSecret.setUuid(uuid);
           newSecret.setVersionCreatedAt(frozenTime.plusSeconds(10));
           return newSecret;
-        }).when(secretDataService).save(any(NamedPasswordSecret.class));
+        }).when(secretDataService).upsert(any(NamedPasswordSecret.class));
 
         resetAuditLogMock();
 
@@ -139,7 +139,7 @@ public class SecretsControllerRegenerateTest {
             .andExpect(jsonPath("$.version_created_at").value(frozenTime.plusSeconds(10).toString()));
 
         ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
-        verify(secretDataService, times(1)).save(argumentCaptor.capture());
+        verify(secretDataService, times(1)).upsert(argumentCaptor.capture());
 
         NamedPasswordSecret newPassword = argumentCaptor.getValue();
 

@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -15,9 +18,6 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -106,7 +106,7 @@ public class NamedSshSecretTest {
         NamedSshSecret copy = new NamedSshSecret();
         subject.copyInto(copy);
 
-        assertThat(copy.getName(), equalTo("foo"));
+        assertThat(copy.getSecretName(), equalTo("foo"));
         assertThat(copy.getPublicKey(), equalTo("fake-public-key"));
         assertThat(copy.getEncryptedValue(), equalTo("fake-private-key".getBytes()));
         assertThat(copy.getNonce(), equalTo("fake-nonce".getBytes()));
