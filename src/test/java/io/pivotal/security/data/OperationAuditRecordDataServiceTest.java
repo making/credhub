@@ -44,7 +44,7 @@ public class OperationAuditRecordDataServiceTest {
       jdbcTemplate.execute("delete from encryption_key_canary");
     });
 
-    describe("#save", () -> {
+    describe("#createOrReplace", () -> {
       it("should create the entity in the database", () -> {
         OperationAuditRecord record = createOperationAuditRecord();
         record = subject.save(record);

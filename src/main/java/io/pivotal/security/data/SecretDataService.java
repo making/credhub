@@ -57,11 +57,18 @@ public class SecretDataService {
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
   }
 
-  public <Z extends NamedSecret> Z save(Z namedSecret) {
+  public <Z extends NamedSecret> Z createOrReplace(Z namedSecret) {
     if (namedSecret.getEncryptionKeyUuid() == null) {
       namedSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
     }
     return secretRepository.saveAndFlush(namedSecret);
+  }
+
+  public NamedSecret createIfNotExists(NamedSecret namedSecret) {
+    if (namedSecret.getEncryptionKeyUuid() == null) {
+      namedSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
+    }
+    return secretRepository.createIfNotExists(namedSecret);
   }
 
   public List<String> findAllPaths() {

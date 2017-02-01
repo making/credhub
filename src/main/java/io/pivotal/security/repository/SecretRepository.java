@@ -33,4 +33,12 @@ public interface SecretRepository extends JpaRepository<NamedSecret, UUID> {
         .sorted()
         .collect(Collectors.toList());
   }
+
+  default NamedSecret createIfNotExists(NamedSecret namedSecret){
+    NamedSecret existing = findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(namedSecret.getName());
+    if (existing == null){
+      return saveAndFlush(namedSecret);
+    }
+    return existing;
+  }
 }

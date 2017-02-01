@@ -42,7 +42,7 @@ public class AuthFailureAuditRecordDataServiceTest {
       jdbcTemplate.execute("delete from auth_failure_audit_record");
     });
 
-    describe("#save", () -> {
+    describe("#createOrReplace", () -> {
       it("should create the entity in the database", () -> {
         AuthFailureAuditRecord record = createAuthFailureAuditRecord();
         record = subject.save(record);

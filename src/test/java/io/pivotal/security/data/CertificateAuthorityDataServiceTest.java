@@ -85,7 +85,7 @@ public class CertificateAuthorityDataServiceTest {
       jdbcTemplate.execute("delete from encryption_key_canary");
     });
 
-    describe("#save", () -> {
+    describe("#createOrReplace", () -> {
       it("should create the entity in the database", () -> {
         NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", "fake-certificate");
         certificateAuthority = subject.save(certificateAuthority);
@@ -173,7 +173,7 @@ public class CertificateAuthorityDataServiceTest {
       });
 
       describe("when the entity already exists", () -> {
-        it("should save the updated entity", () -> {
+        it("should createOrReplace the updated entity", () -> {
           NamedCertificateAuthority certificateAuthority = subject.save(createCertificateAuthority("test-name", "original-certificate"));
           String newCertificateValue = "new-certificate";
           certificateAuthority.setCertificate(newCertificateValue);

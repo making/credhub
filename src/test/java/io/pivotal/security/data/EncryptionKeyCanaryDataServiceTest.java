@@ -46,8 +46,8 @@ public class EncryptionKeyCanaryDataServiceTest {
       jdbcTemplate.execute("delete from encryption_key_canary");
     });
 
-    describe("#save", () -> {
-      it("should save the encryption key in the database", () -> {
+    describe("#createOrReplace", () -> {
+      it("should createOrReplace the encryption key in the database", () -> {
         EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
         encryptionKeyCanary.setNonce("test-nonce".getBytes());
         encryptionKeyCanary.setEncryptedValue("test-value".getBytes());

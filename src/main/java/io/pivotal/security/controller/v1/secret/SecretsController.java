@@ -10,6 +10,7 @@ import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
+import io.pivotal.security.service.SecretStorageService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;
@@ -87,6 +88,9 @@ public class SecretsController {
 
   @Autowired
   AuditLogService auditLogService;
+
+  @Autowired
+  SecretStorageService secretStorageService;
 
   private MessageSourceAccessor messageSourceAccessor;
 
@@ -259,15 +263,15 @@ public class SecretsController {
     boolean willBeCreated = existingNamedSecret == null;
     boolean overwrite = BooleanUtils.isTrue(parsedRequestBody.read("$.overwrite", Boolean.class));
     boolean regenerate = BooleanUtils.isTrue(parsedRequestBody.read("$.regenerate", Boolean.class));
+    boolean createOrWrite = willBeCreated || overwrite || regenerate;
 
-    boolean willWrite = willBeCreated || overwrite || regenerate;
-    AuditingOperationCode operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
+    AuditingOperationCode operationCode = createOrWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
     return auditLogService.performWithAuditing(new AuditRecordBuilder(operationCode, secretName, request, authentication), () -> {
       if (regenerate && existingNamedSecret == null) {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       }
 
-      return storeSecret(secretName, handler, parsedRequestBody, existingNamedSecret, willWrite);
+      return storeSecret(secretName, handler, parsedRequestBody, existingNamedSecret, overwrite, regenerate);
     });
   }
 
@@ -279,29 +283,9 @@ public class SecretsController {
                                         SecretKindMappingFactory namedSecretHandler,
                                         DocumentContext parsed,
                                         NamedSecret existingNamedSecret,
-                                        boolean willWrite) {
+                                        boolean overwrite, boolean regenerate) {
     try {
-      String requestedSecretType = parsed.read("$.type");
-      final SecretKind secretKind = (existingNamedSecret != null ?
-          existingNamedSecret.getKind() :
-          SecretKindFromString.fromString(requestedSecretType));
-      if (existingNamedSecret != null && requestedSecretType != null && !existingNamedSecret.getSecretType().equals(requestedSecretType))
-        throw new ParameterizedValidationException("error.type_mismatch");
-      secretPath = existingNamedSecret == null ? secretPath : existingNamedSecret.getName();
-
-      NamedSecret storedNamedSecret;
-      if (willWrite) {
-        storedNamedSecret = secretKind.lift(namedSecretHandler.make(secretPath, parsed)).apply(existingNamedSecret);
-        storedNamedSecret = secretDataService.save(storedNamedSecret);
-      } else {
-        // To catch invalid parameters, validate request even though we throw away the result.
-        // We need to apply it to null or Hibernate may decide to save the record.
-        // As above, the unit tests won't catch (all) issues :( , but there is an integration test to cover it.
-        storedNamedSecret = existingNamedSecret;
-        secretKind.lift(namedSecretHandler.make(secretPath, parsed)).apply(null);
-      }
-
-      SecretView secretView = SecretView.fromEntity(storedNamedSecret);
+      SecretView secretView = secretStorageService.storeSecret(secretPath, namedSecretHandler, parsed,existingNamedSecret, overwrite, regenerate);
       return new ResponseEntity<>(secretView, HttpStatus.OK);
     } catch (ParameterizedValidationException ve) {
       return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);

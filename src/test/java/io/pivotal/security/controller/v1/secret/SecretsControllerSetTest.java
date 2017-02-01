@@ -25,9 +25,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
@@ -149,6 +147,7 @@ public class SecretsControllerSetTest {
         thread2.join();
       });
 
+      // TODO moar description
       it("test", () -> {
         responses[0].andExpect(jsonPath("$.value").value(secretValue + "thread 1"));
         responses[1].andExpect(jsonPath("$.value").value(secretValue + "thread 2"));
@@ -162,8 +161,8 @@ public class SecretsControllerSetTest {
         valueSecret.setValue(secretValue);
 
         doReturn(
-            valueSecret
-        ).when(secretDataService).save(any(NamedValueSecret.class));
+          valueSecret
+        ).when(secretDataService).createIfNotExists(any(NamedValueSecret.class));
       });
 
       describe("via parameter in request body", () -> {
@@ -203,8 +202,9 @@ public class SecretsControllerSetTest {
     });
 
     describe("updating a secret", () -> {
+      final NamedSecret[] originalSecret = new NamedSecret[1];
       beforeEach(() -> {
-        putSecretInDatabase(secretName, "original value");
+        originalSecret[0] = putSecretInDatabase(secretName, "original value");
         resetAuditLogMock();
       });
 
@@ -263,10 +263,10 @@ public class SecretsControllerSetTest {
         it("should return the updated value", () -> {
           ArgumentCaptor<NamedSecret> argumentCaptor = ArgumentCaptor.forClass(NamedSecret.class);
 
-          verify(secretDataService, times(1)).save(argumentCaptor.capture());
+          verify(secretDataService, times(1)).createOrReplace(argumentCaptor.capture());
 
           // Because the data service mutates the original entity, the UUID should be set
-          // on the original object during the save.
+          // on the original object during the createOrReplace.
           UUID originalUuid = uuid;
           UUID expectedUuid = argumentCaptor.getValue().getUuid();
 
@@ -297,6 +297,10 @@ public class SecretsControllerSetTest {
 
       describe("with the overwrite flag set to false", () -> {
         beforeEach(() -> {
+          doReturn(
+            originalSecret[0]
+          ).when(secretDataService).createIfNotExists(any(NamedValueSecret.class));
+
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
@@ -335,7 +339,7 @@ public class SecretsControllerSetTest {
                 "}"))
             .andExpect(status().isOk());
         ArgumentCaptor<NamedPasswordSecret> captor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
-        verify(secretDataService).save(captor.capture());
+        verify(secretDataService).createOrReplace(captor.capture());
         assertThat(captor.getValue().getEncryptedGenerationParameters(), nullValue());
       });
     });
@@ -355,7 +359,7 @@ public class SecretsControllerSetTest {
     it("asks the data service to persist the secret", () -> {
       ArgumentCaptor<NamedValueSecret> argumentCaptor = ArgumentCaptor.forClass(NamedValueSecret.class);
 
-      verify(secretDataService, times(1)).save(argumentCaptor.capture());
+      verify(secretDataService, times(1)).createIfNotExists(argumentCaptor.capture());
 
       NamedValueSecret namedValueSecret = argumentCaptor.getValue();
       assertThat(namedValueSecret.getValue(), equalTo(secretValue));
@@ -467,13 +471,13 @@ public class SecretsControllerSetTest {
     });
   }
 
-  private void putSecretInDatabase(String name, String value) throws Exception {
+  private NamedSecret  putSecretInDatabase(String name, String value) throws Exception {
     uuid = UUID.randomUUID();
     NamedValueSecret valueSecret = new NamedValueSecret(name).setUuid(uuid).setVersionCreatedAt(frozenTime);
     valueSecret.setValue(value);
     doReturn(
         valueSecret
-    ).when(secretDataService).save(any(NamedValueSecret.class));
+    ).when(secretDataService).createOrReplace(any(NamedValueSecret.class));
 
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
         .accept(APPLICATION_JSON)
@@ -496,6 +500,8 @@ public class SecretsControllerSetTest {
     doReturn(
         valueSecret
     ).when(secretDataService).findByUuid(uuid.toString());
+
+    return valueSecret;
   }
 
   private void resetAuditLogMock() throws Exception {

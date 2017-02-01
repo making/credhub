@@ -26,6 +26,7 @@ public class DataSourceHealthIndicatorTest {
     this.subject = new DataSourceHealthIndicator();
     addSingleConnectionSourceToDataSources();
     subject.setDataSources(dataSources);
+    subject.set
   }
 
   @After

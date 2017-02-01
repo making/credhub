@@ -32,9 +32,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
@@ -116,7 +114,14 @@ public class SecretsControllerGenerateTest {
           secret.setUuid(uuid);
           secret.setVersionCreatedAt(frozenTime);
           return secret;
-        }).when(secretDataService).save(any(NamedSecret.class));
+        }).when(secretDataService).createOrReplace(any(NamedSecret.class));
+
+        doAnswer(invocation -> {
+          NamedSecret secret = invocation.getArgumentAt(0, NamedSecret.class);
+          secret.setUuid(uuid);
+          secret.setVersionCreatedAt(frozenTime);
+          return secret;
+        }).when(secretDataService).createIfNotExists(any(NamedSecret.class));
       });
 
       it("for a new value secret should return an error message", () -> {
@@ -170,7 +175,7 @@ public class SecretsControllerGenerateTest {
 
         it("asks the data service to persist the secret", () -> {
           ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
-          verify(secretDataService, times(1)).save(argumentCaptor.capture());
+          verify(secretDataService, times(1)).createIfNotExists(argumentCaptor.capture());
 
           NamedPasswordSecret newPassword = argumentCaptor.getValue();
 
@@ -263,7 +268,7 @@ public class SecretsControllerGenerateTest {
           });
 
           it("should not persist the secret", () -> {
-            verify(secretDataService, times(0)).save(any(NamedSecret.class));
+            verify(secretDataService, times(0)).createOrReplace(any(NamedSecret.class));
           });
 
           it("persists an audit entry", () -> {

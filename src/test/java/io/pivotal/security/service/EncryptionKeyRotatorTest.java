@@ -73,10 +73,10 @@ public class EncryptionKeyRotatorTest {
       verify(secretEncryptionHelper).rotate(certificateAuthority3);
     });
 
-    it("should save all the secrets, CAs that were encrypted with an old key", () -> {
-      verify(secretDataService).save(certificateSecret);
-      verify(secretDataService).save(passwordSecret);
-      verify(secretDataService).save(sshSecret);
+    it("should createOrReplace all the secrets, CAs that were encrypted with an old key", () -> {
+      verify(secretDataService).createOrReplace(certificateSecret);
+      verify(secretDataService).createOrReplace(passwordSecret);
+      verify(secretDataService).createOrReplace(sshSecret);
 
       verify(certificateAuthorityDataService).save(certificateAuthority1);
       verify(certificateAuthorityDataService).save(certificateAuthority2);

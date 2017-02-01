@@ -47,7 +47,7 @@ public class TransactionContractTest {
           auditRecordRepository.failOnSave();
         });
 
-        itThrows("save audit record", RuntimeException.class, () -> {
+        itThrows("createOrReplace audit record", RuntimeException.class, () -> {
           auditRecordRepository.save(new OperationAuditRecord());
         });
 
@@ -61,7 +61,7 @@ public class TransactionContractTest {
           transactionManager.failOnCommit();
         });
 
-        itThrows("save audit record", RuntimeException.class, () -> {
+        itThrows("createOrReplace audit record", RuntimeException.class, () -> {
           transactionManager.commit(transaction);
         });
       });
