@@ -7,6 +7,9 @@ import org.mockito.InOrder;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static com.sun.tools.doclint.Entity.sub;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -67,6 +70,21 @@ public class RetryingEncryptionServiceTest {
     });
 
     describe("#encrypt", () -> {
+      it("should return the decrypted string without attempting to reconnect", () -> {
+        reset(encryptionService);
+
+        when(encryptionService.encrypt(firstKey, "fake-plaintext"))
+            .thenReturn(new Encryption("fake-encrypted-value".getBytes(), "fake-plaintext".getBytes()));
+
+        Encryption encryptedValue = subject.encrypt(firstKey, "fake-plaintext");
+
+        assertThat(encryptedValue.encryptedValue, equalTo("fake-encrypted-value".getBytes()));
+        assertThat(encryptedValue.nonce, equalTo("fake-nonce".getBytes()));
+
+        verify(remoteEncryptionConnectable, times(0)).reconnect(any(IllegalBlockSizeException.class));
+        verify(keyMapper, times(0)).mapUuidsToKeys();
+      });
+
       describe("when encrypt throws errors", () -> {
         beforeEach(() -> {
           when(encryptionService.encrypt(any(Key.class), anyString()))
@@ -111,6 +129,24 @@ public class RetryingEncryptionServiceTest {
             // expected
           }
           verify(keyMapper).mapUuidsToKeys();
+        });
+      });
+
+      describe("when the operation succeeds only after reconnection", () -> {
+        it("should return the encrypted string", () -> {
+          reset(encryptionService);
+
+          when(encryptionService.encrypt(firstKey, "fake-plaintext"))
+              .thenThrow(new IllegalBlockSizeException("test exception"));
+          when(encryptionService.encrypt(secondKey, "fake-plaintext"))
+              .thenReturn(new Encryption("fake-encrypted-value".getBytes(), "fake-nonce".getBytes()));
+
+          // Sebastian has asked to be blamed for the fact that this doesn't compile :)
+          assertThat(subject.encrypt(firstKey, "fake-"))
+          assertThat(subject.decrypt(firstKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()), equalTo("fake-plaintext"));
+
+          verify(remoteEncryptionConnectable, times(1)).reconnect(any(IllegalBlockSizeException.class));
+          verify(keyMapper, times(1)).mapUuidsToKeys();
         });
       });
 
@@ -167,6 +203,18 @@ public class RetryingEncryptionServiceTest {
     });
 
     describe("#decrypt", () -> {
+      it("should return the decrypted string without attempting to reconnect", () -> {
+        reset(encryptionService);
+
+        when(encryptionService.decrypt(firstKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
+            .thenReturn("fake-plaintext");
+
+        assertThat(subject.decrypt(firstKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()), equalTo("fake-plaintext"));
+
+        verify(remoteEncryptionConnectable, times(0)).reconnect(any(IllegalBlockSizeException.class));
+        verify(keyMapper, times(0)).mapUuidsToKeys();
+      });
+
       describe("when decrypt throws errors", () -> {
         beforeEach(() -> {
           when(encryptionService.decrypt(any(Key.class), any(byte[].class), any(byte[].class)))
@@ -214,11 +262,27 @@ public class RetryingEncryptionServiceTest {
             // expected
           }
 
-          verify(readLock, times(1)).lock();
-          verify(readLock, times(1)).unlock();
+          verify(readLock, times(2)).lock();
+          verify(readLock, times(2)).unlock();
 
           verify(writeLock, times(1)).lock();
           verify(writeLock, times(1)).unlock();
+        });
+
+        describe("when the operation succeeds only after reconnection", () -> {
+          it("should return the decrypted string", () -> {
+            reset(encryptionService);
+
+            when(encryptionService.decrypt(firstKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
+                .thenThrow(new IllegalBlockSizeException("test exception"));
+            when(encryptionService.decrypt(secondKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
+                .thenReturn("fake-plaintext");
+
+            assertThat(subject.decrypt(firstKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()), equalTo("fake-plaintext"));
+
+            verify(remoteEncryptionConnectable, times(1)).reconnect(any(IllegalBlockSizeException.class));
+            verify(keyMapper, times(1)).mapUuidsToKeys();
+          });
         });
       });
 

@@ -53,7 +53,6 @@ public class RetryingEncryptionService {
 
         UUID keyId = keyMapper.getUuidForKey(originalKey);
 
-        readWriteLock.readLock().unlock();
         setNeedsReconnectFlag();
         withPreventCryptoLock(() -> {
           if (needsReconnect) {
@@ -62,7 +61,6 @@ public class RetryingEncryptionService {
             needsReconnect = false;
           }
         });
-        readWriteLock.readLock().lock();
 
         return operation.apply(keyMapper.getKeyForUuid(keyId));
       }
@@ -89,12 +87,14 @@ public class RetryingEncryptionService {
   }
 
   private void withPreventCryptoLock(ThrowingRunnable runnable) throws Exception {
+    readWriteLock.readLock().unlock();
     readWriteLock.writeLock().lock();
 
     try {
       runnable.run();
     } finally {
       readWriteLock.writeLock().unlock();
+      readWriteLock.readLock().lock();
     }
   }
 
