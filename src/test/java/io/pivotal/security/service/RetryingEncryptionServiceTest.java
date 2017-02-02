@@ -60,7 +60,7 @@ public class RetryingEncryptionServiceTest {
       final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
       readLock = spy(rwLock.readLock());
       writeLock = spy(rwLock.writeLock());
-      readWriteLock = mock(ReentrantReadWriteLock.class);
+      readWriteLock = spy(ReentrantReadWriteLock.class);
       when(readWriteLock.readLock()).thenReturn(readLock);
       when(readWriteLock.writeLock()).thenReturn(writeLock);
       subject.readWriteLock = readWriteLock;
@@ -150,25 +150,11 @@ public class RetryingEncryptionServiceTest {
             }
           };
 
+          subject = new RacingRetryingEncryptionServiceForTest(firstThread, secondThread, lock);
+
           when(encryptionService.encrypt(any(Key.class), anyString()))
               .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
-          // our first chance to capture the threads after they have triggered the exception
-          // we want to ensure that both threads have triggered it before allowing either of them
-          // to do a reconnect
-          when(keyMapper.getUuidForKey(eq(key))).thenAnswer(invocation -> {
-            if (Thread.currentThread().getName().equals("first")) {
-              secondThread.start();
-              synchronized (lock) {
-                lock.wait(); // pause the first thread
-              }
-            } else {
-              synchronized (lock) {
-                lock.notify(); // unpause the first thread
-              }
-            }
-
-            return keyUuid;
-          });
+          when(keyMapper.getUuidForKey(eq(key))).thenReturn(keyUuid);
 
           firstThread.start();
 
@@ -228,8 +214,8 @@ public class RetryingEncryptionServiceTest {
             // expected
           }
 
-          verify(readLock, times(2)).lock();
-          verify(readLock, times(2)).unlock();
+          verify(readLock, times(1)).lock();
+          verify(readLock, times(1)).unlock();
 
           verify(writeLock, times(1)).lock();
           verify(writeLock, times(1)).unlock();
@@ -259,7 +245,7 @@ public class RetryingEncryptionServiceTest {
             @Override
             public void run() {
               try {
-                subject.decrypt(key, "encrypted value 1".getBytes(), "nonce 1".getBytes());
+                subject.decrypt(key, "a value 1".getBytes(), "nonce".getBytes());
               } catch (Exception e) {
               }
             }
@@ -268,31 +254,17 @@ public class RetryingEncryptionServiceTest {
             @Override
             public void run() {
               try {
-                subject.decrypt(key, "encrypted value 2".getBytes(), "nonce 2".getBytes());
+                subject.decrypt(key, "a value 2".getBytes(), "nonce".getBytes());
               } catch (Exception e) {
               }
             }
           };
 
+          subject = new RacingRetryingEncryptionServiceForTest(firstThread, secondThread, lock);
+
           when(encryptionService.decrypt(any(Key.class), any(byte[].class), any(byte[].class)))
               .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
-          // our first chance to capture the threads after they have triggered the exception
-          // we want to ensure that both threads have triggered it before allowing either of them
-          // to do a reconnect
-          when(keyMapper.getUuidForKey(eq(key))).thenAnswer(invocation -> {
-            if (Thread.currentThread().getName().equals("first")) {
-              secondThread.start();
-              synchronized (lock) {
-                lock.wait(); // pause the first thread
-              }
-            } else {
-              synchronized (lock) {
-                lock.notify(); // unpause the first thread
-              }
-            }
-
-            return keyUuid;
-          });
+          when(keyMapper.getUuidForKey(eq(key))).thenReturn(keyUuid);
 
           firstThread.start();
 
@@ -303,5 +275,37 @@ public class RetryingEncryptionServiceTest {
         });
       });
     });
+  }
+
+  private class RacingRetryingEncryptionServiceForTest extends RetryingEncryptionService {
+    private final Thread firstThread;
+    private final Thread secondThread;
+    private final Object lock;
+
+    RacingRetryingEncryptionServiceForTest(Thread firstThread, Thread secondThread, Object lock) {
+      super(RetryingEncryptionServiceTest.this.encryptionService, RetryingEncryptionServiceTest.this.keyMapper, RetryingEncryptionServiceTest.this.remoteEncryptionConnectable);
+      this.firstThread = firstThread;
+      this.secondThread = secondThread;
+      this.lock = lock;
+    }
+
+    @Override
+    void setNeedsReconnectFlag() {
+      try {
+        if (Thread.currentThread().equals(firstThread)) {
+          secondThread.start();
+          synchronized (lock) {
+            lock.wait(); // pause the first thread
+          }
+          Thread.sleep(10); // give thread two a chance to get all the way through the retry
+        } else {
+          synchronized (lock) {
+            lock.notify(); // unpause the first thread
+          }
+        }
+      } catch (Exception e) {
+      }
+      super.setNeedsReconnectFlag(); // give thread one a chance to set the needsRetry flag after thread two finishes. sets us up for reconnecting twice
+    }
   }
 }

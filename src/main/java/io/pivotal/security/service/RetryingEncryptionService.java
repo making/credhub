@@ -20,10 +20,12 @@ public class RetryingEncryptionService {
   private final EncryptionKeyCanaryMapper keyMapper;
   private final RemoteEncryptionConnectable remoteEncryptionConnectable;
   private final Logger logger;
-  private boolean needsReconnect;
+  private volatile boolean needsReconnect; // volatile so all threads see changes
 
   @Autowired
-  public RetryingEncryptionService(EncryptionService encryptionService, EncryptionKeyCanaryMapper keyMapper, RemoteEncryptionConnectable remoteEncryptionConnectable) {
+  public RetryingEncryptionService(EncryptionService encryptionService,
+                                   EncryptionKeyCanaryMapper keyMapper,
+                                   RemoteEncryptionConnectable remoteEncryptionConnectable) {
     this.encryptionService = encryptionService;
     this.keyMapper = keyMapper;
     this.remoteEncryptionConnectable = remoteEncryptionConnectable;
@@ -43,61 +45,71 @@ public class RetryingEncryptionService {
   }
 
   private <T> T retryOnErrorWithRemappedKey(Key originalKey, ThrowingFunction<Key, T> operation) throws Exception {
-    preventReconnect();
+    return withPreventReconnectLock(() -> {
+      try {
+        return operation.apply(originalKey);
+      } catch (IllegalBlockSizeException | ProviderException e) {
+        logger.info("Operation failed: " + e.getMessage());
+
+        UUID keyId = keyMapper.getUuidForKey(originalKey);
+
+        readWriteLock.readLock().unlock();
+        setNeedsReconnectFlag();
+        withPreventCryptoLock(() -> {
+          if (needsReconnect) {
+            logger.info("Trying reconnect");
+            reconnectAndRemapKeysToUuids(e);
+            needsReconnect = false;
+          }
+        });
+        readWriteLock.readLock().lock();
+
+        return operation.apply(keyMapper.getKeyForUuid(keyId));
+      }
+    });
+  }
+
+  // for testing. so sorry
+  void setNeedsReconnectFlag() {
+    needsReconnect = true;
+  }
+
+  private void reconnectAndRemapKeysToUuids(Exception originalException) throws Exception {
+    remoteEncryptionConnectable.reconnect(originalException);
+    keyMapper.mapUuidsToKeys();
+  }
+
+  private <T> T withPreventReconnectLock(ThrowingSupplier<T> operation) throws Exception {
+    readWriteLock.readLock().lock();
+    try {
+      return operation.get();
+    } finally {
+      readWriteLock.readLock().unlock();
+    }
+  }
+
+  private void withPreventCryptoLock(ThrowingRunnable runnable) throws Exception {
+    readWriteLock.writeLock().lock();
 
     try {
-      return operation.apply(originalKey);
-    } catch (IllegalBlockSizeException | ProviderException e) {
-      logger.info("Operation failed. Trying to log in.");
-      logger.info("Exception thrown: " + e.getMessage());
-
-      allowReconnect();
-      UUID keyId = keyMapper.getUuidForKey(originalKey);
-      needsReconnect = true;
-      try {
-        reconnectAndRemapKeysToUuids(e);
-        logger.info("Reconnected to the HSM");
-      } finally {
-        preventReconnect();
-      }
-
-      return operation.apply(keyMapper.getKeyForUuid(keyId));
+      runnable.run();
     } finally {
-      allowReconnect();
+      readWriteLock.writeLock().unlock();
     }
-  }
-
-  private synchronized void reconnectAndRemapKeysToUuids(Exception originalException) throws Exception {
-    if (needsReconnect) {
-      preventCryptoDuringReconnect();
-      try {
-        remoteEncryptionConnectable.reconnect(originalException);
-        keyMapper.mapUuidsToKeys();
-        needsReconnect = false;
-      } finally {
-        allowCryptoAfterReconnect();
-      }
-    }
-  }
-
-  private void allowReconnect() {
-    readWriteLock.readLock().unlock();
-  }
-
-  private void preventReconnect() {
-    readWriteLock.readLock().lock();
-  }
-
-  private void allowCryptoAfterReconnect() {
-    readWriteLock.writeLock().unlock();
-  }
-
-  private void preventCryptoDuringReconnect() {
-    readWriteLock.writeLock().lock();
   }
 
   @FunctionalInterface
   private interface ThrowingFunction<T, R> {
     R apply(T t) throws Exception;
+  }
+
+  @FunctionalInterface
+  public interface ThrowingSupplier<T> {
+    T get() throws Exception;
+  }
+
+  @FunctionalInterface
+  public interface ThrowingRunnable {
+    void run() throws Exception;
   }
 }
