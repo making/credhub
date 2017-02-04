@@ -285,5 +285,30 @@ public class CertificateGeneratorRequestTranslatorTest {
         subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), entity);
       });
     });
+
+    describe("self-signed certificates", () -> {
+      it("should set name of the ca to the name of the credential", () -> {
+        String json = "{" +
+            "\"type\":\"certificate\"," +
+            "\"name\":\"My Name\"," +
+            "\"parameters\":{" +
+            "\"organization\": \"organization.io\"," +
+            "\"state\": \"My State\"," +
+            "\"country\": \"My Country\"," +
+            "\"self-sign\": \"true\"" +
+            "}" +
+            "}";
+        CertificateSecretParameters expectedParameters = new CertificateSecretParameters()
+            .setOrganization("organization.io")
+            .setState("My State")
+            .setCountry("My Country")
+            .setType("certificate")
+            .setCaName("My Name");
+
+        DocumentContext parsed = jsonPath.parse(json);
+        CertificateSecretParameters parameters = subject.validRequestParameters(parsed, null);
+        assertThat(parameters, samePropertyValuesAs(expectedParameters));
+      });
+    });
   }
 }
