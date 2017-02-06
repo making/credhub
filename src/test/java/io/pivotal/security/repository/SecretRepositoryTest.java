@@ -78,7 +78,7 @@ public class SecretRepositoryTest {
       entity.setEncryptionKeyUuid(canaryUuid);
 
       subject.save(entity);
-      NamedCertificateSecret certificateSecret = (NamedCertificateSecret) subject.findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(secretName);
+      NamedCertificateSecret certificateSecret = (NamedCertificateSecret) subject.findFirstBySecretMetadataNameIgnoreCaseOrderByVersionCreatedAtDesc(secretName);
       assertThat(certificateSecret.getCa().length(), equalTo(7000));
       assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
       assertThat(certificateSecret.getEncryptedValue(), equalTo(encryptedValue));
@@ -96,7 +96,7 @@ public class SecretRepositoryTest {
       entity.setEncryptionKeyUuid(canaryUuid);
 
       subject.save(entity);
-      assertThat((subject.findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(secretName)).getEncryptedValue().length, equalTo(7016));
+      assertThat((subject.findFirstBySecretMetadataNameIgnoreCaseOrderByVersionCreatedAtDesc(secretName)).getEncryptedValue().length, equalTo(7016));
     });
   }
 }

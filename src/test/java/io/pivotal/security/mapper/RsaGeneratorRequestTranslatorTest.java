@@ -131,7 +131,6 @@ public class RsaGeneratorRequestTranslatorTest {
 
       it("can regenerate using the existing entity and JSON", () -> {
         NamedRsaSecret secret = spy(NamedRsaSecret.class);
-        secret.setName("test");
         when(secret.getKeyLength()).thenReturn(3072);
 
         ArgumentCaptor<RsaSecretParameters> parameterCaptor = ArgumentCaptor.forClass(RsaSecretParameters.class);

@@ -1,13 +1,12 @@
 CREATE TABLE `secret_metadata` (
   `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NOT NULL,
-  `type` VARCHAR(31) NOT NULL,
   PRIMARY KEY(`id`),
   UNIQUE KEY `secret_metadata_unique_name` (`name`)
 ) CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-INSERT INTO `secret_metadata` (`name`, `type`)
-  SELECT DISTINCT(`name`, `type`)
+INSERT INTO `secret_metadata` (`name`)
+  SELECT DISTINCT(`name`)
   FROM `named_secret`;
 
 ALTER TABLE `named_secret`
@@ -19,8 +18,7 @@ UPDATE named_secret ns
 set ns.secret_metadata_id=sm.id;
 
 ALTER TABLE named_secret
-  DROP COLUMN `name`,
-  DROP COLUMN `type`;
+  DROP COLUMN `name`;
 
 ALTER TABLE `named_secret` MODIFY COLUMN `secret_metadata_id` BIGINT(20) NOT NULL,
   ADD CONSTRAINT `secret_metadata_id_fkey`

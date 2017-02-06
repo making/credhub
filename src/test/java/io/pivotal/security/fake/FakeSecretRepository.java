@@ -1,6 +1,7 @@
 package io.pivotal.security.fake;
 
 import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.SecretMetadata;
 import io.pivotal.security.repository.SecretRepository;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -25,7 +26,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public NamedSecret findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(String name) {
+  public NamedSecret findFirstBySecretMetadataNameIgnoreCaseOrderByVersionCreatedAtDesc(String name) {
     throw new UnsupportedOperationException();
   }
 
@@ -35,7 +36,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public List<NamedSecret> deleteByNameIgnoreCase(String name) {
+  public List<NamedSecret> deleteBySecretMetadataNameIgnoreCase(String name) {
     throw new UnsupportedOperationException();
   }
 
@@ -78,12 +79,17 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public List<NamedSecret> findAllByNameIgnoreCase(String name) {
+  public List<NamedSecret> findAllBySecretMetadataNameIgnoreCase(String name) {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public Slice<NamedSecret> findByEncryptionKeyUuidNot(UUID encryptionKeyUuid, Pageable page) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<NamedSecret> findBySecretMetadata(SecretMetadata metadata) {
     throw new UnsupportedOperationException();
   }
 
