@@ -3,20 +3,13 @@ package io.pivotal.security.controller.v1;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 
 import java.security.Security;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -27,6 +20,15 @@ import static org.junit.Assert.fail;
 @RunWith(Spectrum.class)
 public class CertificateSecretParametersTest {
 
+  // Make sure self-signed works
+    // make sure however we detect self-signed is secure (check signature?)
+    // make sure a regenerated self-signed cert is self-signed
+  // These tests don't test a CA, they only test self-signed
+    // Make sure a regenerated cert is resigned by the original ca
+  // We don't test duration carrying over from the original cert
+  // These tests don't tests regenerating a CA itself (future story #137497811)
+
+
   /**
    * Subject Name: O=test-org,ST=Jupiter,C=MilkyWay,CN=test-common-name,OU=test-org-unit,L=Europa
    * Duration: 30 days
@@ -35,7 +37,7 @@ public class CertificateSecretParametersTest {
    * Extended Key Usage: server_auth, client_auth
    * Key Usage: digital_signature
    */
-  public static final String TEST_CERT = "-----BEGIN CERTIFICATE-----\n" +
+  public static final String BIG_TEST_CERT = "-----BEGIN CERTIFICATE-----\n" +
       "MIIEbzCCA1egAwIBAgIUYE3pB+BUaAP0YHeofpCmI/xCkmYwDQYJKoZIhvcNAQEL\n" +
       "BQAwDjEMMAoGA1UEAwwDZm9vMB4XDTE3MDIwMzAxNDMzNloXDTE3MDMwNTAxNDMz\n" +
       "NlowfDERMA8GA1UECgwIdGVzdC1vcmcxEDAOBgNVBAgMB0p1cGl0ZXIxETAPBgNV\n" +
@@ -61,6 +63,32 @@ public class CertificateSecretParametersTest {
       "QTHPRc0mETzHET0uL+9UpaUxglRPzuxVhyIYimXSiPQlk8K43gmXM8QKi85eo8xD\n" +
       "W5kgC9Eel5YQcs5wUS/1aW72x2D+7DeGxLjFwm0Sy9S8hfI=\n" +
       "-----END CERTIFICATE-----";
+
+  /**
+   * Subject Name: CN=foo.example.com
+   * Duration: 1 year
+   * Key Length: 2048
+   */
+  public static final String SIMPLE_TEST_CERT = "-----BEGIN CERTIFICATE-----\n" +
+    "MIIC0jCCAbqgAwIBAgIUW6HcroJaHBMF2VK/6z13iBnNxeAwDQYJKoZIhvcNAQEL\n" +
+    "BQAwGjEYMBYGA1UEAwwPZm9vLmV4YW1wbGUuY29tMB4XDTE3MDIwNjIwMDAyN1oX\n" +
+    "DTE4MDIwNjIwMDAyN1owGjEYMBYGA1UEAwwPZm9vLmV4YW1wbGUuY29tMIIBIjAN\n" +
+    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyy+c0ZPNPmGBzkiC+XzMJkbgJFK7\n" +
+    "2BNgLpzI1AmqFBMBs7dSfxypS7qTfAEUQ1HMY2S9/odhslEUIyBVPguonk++WvGw\n" +
+    "w6P49d3GPK6beyrw+FobBkVWJ64qRZIUJlRanFzs1yGnRJ2omHgJ03sTYiL4t8wt\n" +
+    "Cm9po3gp7QwGXQ2Ol1QEadH095WBdwkN0Wo7WF/4+Fz7cACCBZNQoSYmT3uREH9S\n" +
+    "iVur6H4WLsPEs5QBV+o9204qVZh0er+/LEwzuqZD97gppLVdYk673R2Kje4Gc6mz\n" +
+    "Y61oKlQzSQXPsA1Sx7dOUgMGtzhRrFgUE1WzvTqiDVQB9dEsn1JILJWA7wIDAQAB\n" +
+    "oxAwDjAMBgNVHRMBAf8EAjAAMA0GCSqGSIb3DQEBCwUAA4IBAQANE8zWwdjCEmOw\n" +
+    "+wbqVR3RyL1P2T0eQI1ML/epxVNLRoAKihs2ypKFLpLC9P7mucsHxl4FY/pzXOJo\n" +
+    "i0PEG/ZCapRunC3XVwxGUZos2ytPIebyshlp4eRTyuch7ei3aTO2cLrLsgWZxyxc\n" +
+    "i5JveF8PvPZkOR5qzq6P7dMpQde3nL8/kLRwp7aSE8OAKoeyhEDCy+e9lPh9+Q/g\n" +
+    "36dvhRfyD3PUifLC1A6usOedplxEJpf5hNlyVljTXRZXRijltHIxsp2vf8vzSLO4\n" +
+    "zam9Ke7B5YU8lRd5PlyFXDp+vEJ4HaX8FMtUthLvvDQ7l9UOR7r2rf3hfggxC7/s\n" +
+    "s2smQYqB\n" +
+    "-----END CERTIFICATE-----";
+
+  private CertificateSecretParameters certificateSecretParameters;
 
   {
     describe("when not given a certificate string", () -> {
@@ -223,42 +251,123 @@ public class CertificateSecretParametersTest {
     });
 
     describe("when given a certificate string", () -> {
-      beforeEach(() -> {
-        Security.addProvider(new BouncyCastleProvider());
-      });
+      describe("when it is a self-signed certificate", () -> {
+        beforeEach(() -> {
+          Security.addProvider(new BouncyCastleProvider());
+          certificateSecretParameters = new CertificateSecretParameters(BIG_TEST_CERT, "my-name", "my-name");
+        });
 
-      afterEach(() -> {
-        Security.removeProvider("BC");
-      });
+        afterEach(() -> {
+          Security.removeProvider("BC");
+        });
 
-      it("should correctly parse the DN name", () -> {
-        assertThat(new CertificateSecretParameters(TEST_CERT).getDN().toString(),
-            equalTo("O=test-org,ST=Jupiter,C=MilkyWay,CN=test-common-name,OU=test-org-unit,L=Europa"));
-      });
+        it("should correctly parse the DN name", () -> {
+          assertThat(certificateSecretParameters.getDN().toString(),
+              equalTo("O=test-org,ST=Jupiter,C=MilkyWay,CN=test-common-name,OU=test-org-unit,L=Europa"));
+        });
 
-      it("should set the certificate's key length", () -> {
-        assertThat(new CertificateSecretParameters(TEST_CERT).getKeyLength(), equalTo(4096));
-      });
+        it("should set the certificate's key length", () -> {
+          assertThat(certificateSecretParameters.getKeyLength(), equalTo(4096));
+        });
 
-      it("sets alternative names", () -> {
-        assertThat(
-            new CertificateSecretParameters(TEST_CERT).getAlternativeNames(),
-            equalTo(new GeneralNames(new GeneralName(GeneralName.dNSName, "SolarSystem")))
-        );
-      });
+        it("sets alternative names", () -> {
+          assertThat(
+            certificateSecretParameters.getAlternativeNames(),
+              equalTo(new GeneralNames(new GeneralName(GeneralName.dNSName, "SolarSystem")))
+          );
+        });
 
-      it("sets extended key usage", () -> {
-        assertThat(
-            asList(new CertificateSecretParameters(TEST_CERT).getExtendedKeyUsage().getUsages()),
-            containsInAnyOrder(KeyPurposeId.id_kp_serverAuth, KeyPurposeId.id_kp_clientAuth)
-        );
-      });
+        it("sets extended key usage", () -> {
+          assertThat(
+              asList(certificateSecretParameters.getExtendedKeyUsage().getUsages()),
+              containsInAnyOrder(KeyPurposeId.id_kp_serverAuth, KeyPurposeId.id_kp_clientAuth)
+          );
+        });
 
-      it("sets key usage", () -> {
-        assertThat(
-            new CertificateSecretParameters(TEST_CERT).getKeyUsage().hasUsages(KeyUsage.digitalSignature),
-            equalTo(true)
-        );
+        it("sets key usage", () -> {
+          assertThat(
+            certificateSecretParameters.getKeyUsage().hasUsages(KeyUsage.digitalSignature),
+              equalTo(true)
+          );
+        });
+
+        it("sets duration", () -> {
+          assertThat(
+            certificateSecretParameters.getDurationDays(),
+              equalTo(30)
+          );
+        });
+
+        it("sets self-sign", () -> {
+          assertThat(
+            certificateSecretParameters.getSelfSign(),
+              equalTo(true)
+          );
+        });
+
+        it("sets CA name", () -> {
+          assertThat(
+            certificateSecretParameters.getCaName(),
+              equalTo("my-name")
+          );
+        });
+
+        describe("when given a very simple certificate", () -> {
+          beforeEach(() -> {
+            certificateSecretParameters = new CertificateSecretParameters(SIMPLE_TEST_CERT, "another-name", "another-name");
+          });
+
+          it("should correctly parse the DN name", () -> {
+            assertThat(certificateSecretParameters.getDN().toString(),
+              equalTo("CN=foo.example.com"));
+          });
+
+          it("should set the certificate's key length", () -> {
+            assertThat(certificateSecretParameters.getKeyLength(), equalTo(2048));
+          });
+
+          it("has no alternative names", () -> {
+            assertThat(
+              certificateSecretParameters.getAlternativeNames(),
+              equalTo(null)
+            );
+          });
+
+          it("has no extended key usages", () -> {
+            assertThat(
+              certificateSecretParameters.getExtendedKeyUsage(),
+              equalTo(null)
+            );
+          });
+
+          it("has no key usages", () -> {
+            assertThat(
+              certificateSecretParameters.getKeyUsage(),
+              equalTo(null)
+            );
+          });
+
+          it("sets duration", () -> {
+            assertThat(
+              certificateSecretParameters.getDurationDays(),
+              equalTo(360)
+            );
+          });
+
+          it("sets self-sign", () -> {
+            assertThat(
+              certificateSecretParameters.getSelfSign(),
+              equalTo(true)
+            );
+          });
+
+          it("sets CA name", () -> {
+            assertThat(
+              certificateSecretParameters.getCaName(),
+              equalTo("my-name")
+            );
+          });
+        });
       });
     });
   }

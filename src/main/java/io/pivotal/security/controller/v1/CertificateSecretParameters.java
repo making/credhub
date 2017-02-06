@@ -56,7 +56,7 @@ public class CertificateSecretParameters implements RequestParameters {
   public CertificateSecretParameters() {
   }
 
-  public CertificateSecretParameters(String certificate) {
+  public CertificateSecretParameters(String certificate, String certificateName, String caName) {
     try {
       X509Certificate cert = (X509Certificate) CertificateFactory.getInstance("X.509", "BC")
           .generateCertificate(new ByteArrayInputStream(certificate.getBytes()));
@@ -68,6 +68,25 @@ public class CertificateSecretParameters implements RequestParameters {
       this.alternativeNames = getAlternativeNames(certificateHolder);
       this.extendedKeyUsage = extractExtendedKeyUsage(certificateHolder);
       this.keyUsage = extractKeyUsage(certificateHolder);
+
+//        .setCaName(entity.getCaName())
+//        .setDurationDays(entity.getDurationDays())
+//      private boolean selfSign = false;
+//      private boolean isCA = false;
+
+
+//      private String organization;
+//      private String state;
+//      private String country;
+//      private String commonName;
+//      private String organizationUnit;
+//      private String locality;
+//
+//      // Optional Certificate Parameters (not used in RDN)
+////      private int durationDays = 365;
+//      private String caName = "default";
+
+
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -318,7 +337,7 @@ public class CertificateSecretParameters implements RequestParameters {
 
   private static GeneralNames getAlternativeNames(X509CertificateHolder certificateHolder) throws CertificateParsingException {
     Extension encodedAlternativeNames = certificateHolder.getExtension(Extension.subjectAlternativeName);
-    return GeneralNames.getInstance(encodedAlternativeNames.getParsedValue());
+    return encodedAlternativeNames != null ? GeneralNames.getInstance(encodedAlternativeNames.getParsedValue()) : null;
   }
 
   private static ExtendedKeyUsage extractExtendedKeyUsage(X509CertificateHolder certificateHolder) throws CertificateParsingException {
