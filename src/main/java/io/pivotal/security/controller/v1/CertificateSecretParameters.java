@@ -24,6 +24,9 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
+import static java.lang.Math.toIntExact;
+import static java.time.temporal.ChronoUnit.DAYS;
+
 public class CertificateSecretParameters implements RequestParameters {
   private static final Pattern IP_ADDRESS_PATTERN = Pattern.compile("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/\\d+)?$");
   private static final Pattern BAD_IP_ADDRESS_PATTERN = Pattern.compile("^(\\d+\\.){3}\\d+$");
@@ -56,37 +59,23 @@ public class CertificateSecretParameters implements RequestParameters {
   public CertificateSecretParameters() {
   }
 
-  public CertificateSecretParameters(String certificate, String certificateName, String caName) {
+  public CertificateSecretParameters(String certificate, String caName) {
     try {
-      X509Certificate cert = (X509Certificate) CertificateFactory.getInstance("X.509", "BC")
+      X509Certificate x509Cert = (X509Certificate) CertificateFactory.getInstance("X.509", "BC")
           .generateCertificate(new ByteArrayInputStream(certificate.getBytes()));
 
-      X509CertificateHolder certificateHolder = (X509CertificateHolder) (new PEMParser((new StringReader(certificate))).readObject());
+      X509CertificateHolder x509CertHolder = (X509CertificateHolder) (new PEMParser((new StringReader(certificate))).readObject());
 
-      this.x500Name = extractX500Name(cert);
-      this.keyLength = extractKeyLength(cert);
-      this.alternativeNames = getAlternativeNames(certificateHolder);
-      this.extendedKeyUsage = extractExtendedKeyUsage(certificateHolder);
-      this.keyUsage = extractKeyUsage(certificateHolder);
+      this.x500Name = extractX500Name(x509Cert);
+      this.keyLength = extractKeyLength(x509Cert);
+      this.selfSign = extractIsSelfSigned(x509Cert);
+      this.durationDays = extractDurationDays(x509Cert);
 
-//        .setCaName(entity.getCaName())
-//        .setDurationDays(entity.getDurationDays())
-//      private boolean selfSign = false;
-//      private boolean isCA = false;
+      this.extendedKeyUsage = extractExtendedKeyUsage(x509CertHolder);
+      this.alternativeNames = extractAlternativeNames(x509CertHolder);
+      this.keyUsage = extractKeyUsage(x509CertHolder);
 
-
-//      private String organization;
-//      private String state;
-//      private String country;
-//      private String commonName;
-//      private String organizationUnit;
-//      private String locality;
-//
-//      // Optional Certificate Parameters (not used in RDN)
-////      private int durationDays = 365;
-//      private String caName = "default";
-
-
+      this.caName = caName;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -261,7 +250,7 @@ public class CertificateSecretParameters implements RequestParameters {
     return this;
   }
 
-  public ASN1Object getAlternativeNames() {
+  public ASN1Object extractAlternativeNames() {
     return alternativeNames;
   }
 
@@ -327,6 +316,12 @@ public class CertificateSecretParameters implements RequestParameters {
     return this;
   }
 
+  private static boolean extractIsSelfSigned(X509Certificate cert) {
+    final String issuerName = cert.getIssuerDN().getName(); // is issuer dn name same as issuer name?
+    final String subjectName = cert.getSubjectDN().getName(); // is subject dn name same as subject name?
+    return issuerName.equals(subjectName);
+  }
+
   private static X500Name extractX500Name(X509Certificate cert) {
     return new X500Name(cert.getSubjectDN().getName());
   }
@@ -335,7 +330,14 @@ public class CertificateSecretParameters implements RequestParameters {
     return ((RSAPublicKey) cert.getPublicKey()).getModulus().bitLength();
   }
 
-  private static GeneralNames getAlternativeNames(X509CertificateHolder certificateHolder) throws CertificateParsingException {
+  private int extractDurationDays(X509Certificate cert) {
+    return toIntExact(DAYS.between(
+        cert.getNotBefore().toInstant(),
+        cert.getNotAfter().toInstant()
+    ));
+  }
+
+  private static GeneralNames extractAlternativeNames(X509CertificateHolder certificateHolder) throws CertificateParsingException {
     Extension encodedAlternativeNames = certificateHolder.getExtension(Extension.subjectAlternativeName);
     return encodedAlternativeNames != null ? GeneralNames.getInstance(encodedAlternativeNames.getParsedValue()) : null;
   }

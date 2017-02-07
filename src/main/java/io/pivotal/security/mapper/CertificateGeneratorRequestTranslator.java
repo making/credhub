@@ -39,7 +39,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
       if (isEmpty(entity.getCaName())) {
         throw new ParameterizedValidationException("error.cannot_regenerate_non_generated_credentials");
       }
-      return new CertificateSecretParameters(entity.getCertificate(), entity.getName(), entity.getCaName());
+      return new CertificateSecretParameters(entity.getCertificate(), entity.getCaName());
     }
 
     CertificateSecretParameters secretParameters = validCertificateAuthorityParameters(parsed);

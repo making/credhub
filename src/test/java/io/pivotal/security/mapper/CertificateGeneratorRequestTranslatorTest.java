@@ -279,7 +279,7 @@ public class CertificateGeneratorRequestTranslatorTest {
         NamedCertificateSecret certificateSecret = new NamedCertificateSecret("my-cert")
             .setCertificate(BIG_TEST_CERT)
             .setCaName("my-ca");
-        CertificateSecretParameters expectedParameters = new CertificateSecretParameters(certificateSecret.getCertificate(), certificateSecret.getName(), certificateSecret.getCaName());
+        CertificateSecretParameters expectedParameters = new CertificateSecretParameters(certificateSecret.getCertificate(), certificateSecret.getCaName());
         CertificateSecretParameters actualParameters = subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), certificateSecret);
         assertThat(actualParameters, samePropertyValuesAs(expectedParameters));
       });
