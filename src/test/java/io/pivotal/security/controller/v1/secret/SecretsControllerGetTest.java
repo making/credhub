@@ -96,10 +96,10 @@ public class SecretsControllerGetTest {
 
       beforeEach(() -> {
         uuid = UUID.randomUUID();
-        NamedValueSecretData valueSecret = new NamedValueSecretData(secretName).setUuid(uuid).setVersionCreatedAt(frozenTime);
+        NamedValueSecret valueSecret = new NamedValueSecret(secretName).setUuid(uuid).setVersionCreatedAt(frozenTime);
         valueSecret.setEncryptedValue("fake-encrypted-value1".getBytes());
         valueSecret.setEncryptedValue("fake-encrypted-value2".getBytes());
-        NamedValueSecretData valueSecret2 = new NamedValueSecretData(secretName).setUuid(uuid).setVersionCreatedAt(frozenTime);
+        NamedValueSecret valueSecret2 = new NamedValueSecret(secretName).setUuid(uuid).setVersionCreatedAt(frozenTime);
         valueSecret2.setEncryptedValue("fake-encrypted-value2".getBytes());
         valueSecret2.setNonce("fake-nonce2".getBytes());
 

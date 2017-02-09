@@ -14,6 +14,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -21,11 +26,6 @@ import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvid
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
-
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)

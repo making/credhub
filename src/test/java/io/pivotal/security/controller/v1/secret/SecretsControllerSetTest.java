@@ -85,7 +85,7 @@ public class SecretsControllerSetTest {
   private UUID uuid;
 
   final String secretValue = "secret-value";
-  private NamedValueSecretData valueSecret;
+  private NamedValueSecret valueSecret;
   private ResultActions[] responses;
 
   {
@@ -158,12 +158,12 @@ public class SecretsControllerSetTest {
     describe("setting a secret", () -> {
       beforeEach(() -> {
         uuid = UUID.randomUUID();
-        valueSecret = new NamedValueSecretData(secretName).setUuid(uuid).setVersionCreatedAt(frozenTime);
+        valueSecret = new NamedValueSecret(secretName).setUuid(uuid).setVersionCreatedAt(frozenTime);
         valueSecret.setValue(secretValue);
 
         doReturn(
             valueSecret
-        ).when(secretDataService).save(any(NamedValueSecretData.class));
+        ).when(secretDataService).save(any(NamedValueSecret.class));
       });
 
       describe("via parameter in request body", () -> {
@@ -353,11 +353,11 @@ public class SecretsControllerSetTest {
     });
 
     it("asks the data service to persist the secret", () -> {
-      ArgumentCaptor<NamedValueSecretData> argumentCaptor = ArgumentCaptor.forClass(NamedValueSecretData.class);
+      ArgumentCaptor<NamedValueSecret> argumentCaptor = ArgumentCaptor.forClass(NamedValueSecret.class);
 
       verify(secretDataService, times(1)).save(argumentCaptor.capture());
 
-      NamedValueSecretData namedValueSecret = argumentCaptor.getValue();
+      NamedValueSecret namedValueSecret = argumentCaptor.getValue();
       assertThat(namedValueSecret.getValue(), equalTo(secretValue));
     });
 
@@ -370,7 +370,7 @@ public class SecretsControllerSetTest {
 
     describe("error handling", () -> {
       it("returns 400 when the handler raises an exception", () -> {
-        NamedValueSecretData namedValueSecret = new NamedValueSecretData(secretName);
+        NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
         namedValueSecret.setValue(secretValue);
         doReturn(
             namedValueSecret
@@ -469,11 +469,11 @@ public class SecretsControllerSetTest {
 
   private void putSecretInDatabase(String name, String value) throws Exception {
     uuid = UUID.randomUUID();
-    NamedValueSecretData valueSecret = new NamedValueSecretData(name).setUuid(uuid).setVersionCreatedAt(frozenTime);
+    NamedValueSecret valueSecret = new NamedValueSecret(name).setUuid(uuid).setVersionCreatedAt(frozenTime);
     valueSecret.setValue(value);
     doReturn(
         valueSecret
-    ).when(secretDataService).save(any(NamedValueSecretData.class));
+    ).when(secretDataService).save(any(NamedValueSecret.class));
 
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
         .accept(APPLICATION_JSON)

@@ -202,7 +202,7 @@ public class SecretDataServiceTest {
         NamedPasswordSecretData secret = new NamedPasswordSecretData("test-password");
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         subject.save(secret);
-        NamedValueSecretData namedValueSecret = new NamedValueSecretData("test-value");
+        NamedValueSecret namedValueSecret = new NamedValueSecret("test-value");
         namedValueSecret.setEncryptionKeyUuid(activeCanaryUuid);
         subject.save(namedValueSecret);
         NamedCertificateSecretData namedCertificateSecret = new NamedCertificateSecretData("test-certificate");
@@ -305,7 +305,7 @@ public class SecretDataServiceTest {
 
       beforeEach(() -> {
         fakeTimeSetter.accept(2000000000123L);
-        NamedValueSecretData namedValueSecret = new NamedValueSecretData(valueName);
+        NamedValueSecret namedValueSecret = new NamedValueSecret(valueName);
         namedValueSecret.setEncryptionKeyUuid(activeCanaryUuid);
         subject.save(namedValueSecret);
         NamedPasswordSecretData namedPasswordSecret = new NamedPasswordSecretData("/mySe.cret");
@@ -335,7 +335,7 @@ public class SecretDataServiceTest {
       });
 
       it("should return secrets in order by version_created_at, not updated_at", () -> {
-        NamedValueSecretData valueSecret = (NamedValueSecretData) subject.findMostRecent("value.Secret");
+        NamedValueSecret valueSecret = (NamedValueSecret) subject.findMostRecent("value.Secret");
         valueSecret.setEncryptedValue("new-encrypted-value".getBytes());
         subject.save(valueSecret);
         assertThat(subject.findContainingName("SECRET"), IsIterableContainingInOrder.contains(
@@ -463,10 +463,10 @@ public class SecretDataServiceTest {
         String valueName = "/value/Secret";
         String passwordName = "/password/Secret";
         String certificateName = "/certif/ic/ateSecret";
-        NamedValueSecretData namedValueSecret = new NamedValueSecretData(valueOther);
+        NamedValueSecret namedValueSecret = new NamedValueSecret(valueOther);
         namedValueSecret.setEncryptionKeyUuid(activeCanaryUuid);
         subject.save(namedValueSecret);
-        namedValueSecret = new NamedValueSecretData(valueName);
+        namedValueSecret = new NamedValueSecret(valueName);
         namedValueSecret.setEncryptionKeyUuid(activeCanaryUuid);
         subject.save(namedValueSecret);
         NamedPasswordSecretData namedPasswordSecret = new NamedPasswordSecretData(passwordName);

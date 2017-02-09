@@ -1,6 +1,7 @@
 package io.pivotal.security.repository;
 
 import io.pivotal.security.entity.NamedSecretData;
+import io.pivotal.security.util.PathUtil;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,7 +31,7 @@ public interface SecretRepository extends JpaRepository<NamedSecretData, UUID> {
 
     return findAll().stream()
         .map(NamedSecretData::getName)
-        .flatMap(NamedSecretData::fullHierarchyForPath)
+        .flatMap(PathUtil::fullHierarchyForPath)
         .distinct()
         .sorted()
         .collect(Collectors.toList());

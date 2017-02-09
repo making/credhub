@@ -68,10 +68,10 @@ public class TransactionContractTest {
 
       describe("when data has been written", () -> {
         beforeEach(() -> {
-          NamedValueSecretData entity = new NamedValueSecretData("test");
+          NamedValueSecret entity = new NamedValueSecret("test");
           entity.setEncryptedValue("value".getBytes());
           secretRepository.save(entity);
-          NamedValueSecretData namedValueSecret = new NamedValueSecretData("otherTest");
+          NamedValueSecret namedValueSecret = new NamedValueSecret("otherTest");
           namedValueSecret.setEncryptedValue("otherValue".getBytes());
           secretRepository.save(namedValueSecret);
 
@@ -109,7 +109,7 @@ public class TransactionContractTest {
           describe("when another transaction is opened", () -> {
             beforeEach(() -> {
               transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
-              NamedValueSecretData entity = new NamedValueSecretData("test3");
+              NamedValueSecret entity = new NamedValueSecret("test3");
               entity.setEncryptedValue("value3".getBytes());
               secretRepository.save(entity);
               transactionManager.commit(transaction);

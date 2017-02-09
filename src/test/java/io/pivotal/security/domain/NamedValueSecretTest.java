@@ -1,8 +1,10 @@
-package io.pivotal.security.entity;
+package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.domain.NamedStringSecret;
+import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,13 +27,13 @@ public class NamedValueSecretTest {
   @Autowired
   public ObjectMapper objectMapper;
 
-  NamedStringSecretData subject;
+  NamedStringSecret subject;
 
   {
     wireAndUnwire(this, false);
 
     beforeEach(() -> {
-      subject = new NamedValueSecretData("Foo");
+      subject = new NamedValueSecret("Foo");
     });
 
     it("returns type value", () -> {
@@ -40,7 +42,7 @@ public class NamedValueSecretTest {
 
     describe("with or without alternative names", () -> {
       beforeEach(() -> {
-        subject = new NamedValueSecretData("foo");
+        subject = new NamedValueSecret("foo");
       });
 
       it("sets the nonce and the encrypted value", () -> {

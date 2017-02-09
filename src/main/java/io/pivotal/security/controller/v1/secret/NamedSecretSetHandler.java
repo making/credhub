@@ -7,7 +7,7 @@ import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.entity.NamedRsaSecretData;
 import io.pivotal.security.entity.NamedSecretData;
 import io.pivotal.security.entity.NamedSshSecretData;
-import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.mapper.CertificateSetRequestTranslator;
 import io.pivotal.security.mapper.RsaSshSetRequestTranslator;
 import io.pivotal.security.mapper.StringSetRequestTranslator;
@@ -34,7 +34,7 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
     return new SecretKind.CheckedMapping<NamedSecretData, NoSuchAlgorithmException>() {
       @Override
       public NamedSecretData value(NamedSecretData namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret(null, NamedValueSecretData::new, secretPath, stringSetRequestTranslator, parsedRequest);
+        return createNewSecret(null, NamedValueSecret::new, secretPath, stringSetRequestTranslator, parsedRequest);
       }
 
       @Override

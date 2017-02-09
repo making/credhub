@@ -18,10 +18,7 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
@@ -68,6 +65,10 @@ abstract public class NamedSecretData<Z extends NamedSecretData> implements Encr
   @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
   private UUID encryptionKeyUuid;
 
+  public abstract SecretKind getKind();
+  public abstract String getSecretType();
+  abstract void copyIntoImpl(Z copy);
+
   public NamedSecretData() {
     this(null);
   }
@@ -109,10 +110,6 @@ abstract public class NamedSecretData<Z extends NamedSecretData> implements Encr
     this.nonce = nonce;
   }
 
-  public abstract SecretKind getKind();
-
-  public abstract String getSecretType();
-
   public UUID getEncryptionKeyUuid() {
     return encryptionKeyUuid;
   }
@@ -129,24 +126,6 @@ abstract public class NamedSecretData<Z extends NamedSecretData> implements Encr
     this.versionCreatedAt = versionCreatedAt;
     return (Z) this;
   }
-
-  public static Stream<String> fullHierarchyForPath(String path) {
-    String[] components = path.split("/");
-    if (components.length > 1) {
-      StringBuilder currentPath = new StringBuilder();
-      List<String> pathSet = new ArrayList<>();
-      for (int i = 0; i < components.length - 1; i++) {
-        String element = components[i];
-        currentPath.append(element).append('/');
-        pathSet.add(currentPath.toString());
-      }
-      return pathSet.stream();
-    } else {
-      return Stream.of();
-    }
-  }
-
-  abstract void copyIntoImpl(Z copy);
 
   public void copyInto(Z copy) {
     copy.setName(name);

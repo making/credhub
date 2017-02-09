@@ -20,6 +20,4 @@ public abstract class NamedStringSecretData<T extends NamedStringSecretData> ext
     SecretEncryptionHelperProvider.getInstance().refreshEncryptedValue(this, value);
     return this;
   }
-
-  public abstract String getSecretType();
 }

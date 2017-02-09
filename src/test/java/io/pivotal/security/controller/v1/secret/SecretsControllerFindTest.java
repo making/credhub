@@ -90,7 +90,7 @@ public class SecretsControllerFindTest {
         describe("when search term does not include a leading slash", () -> {
           beforeEach(() -> {
             String substring = secretName.substring(4).toUpperCase();
-            NamedValueSecretData namedValueSecret = new NamedValueSecretData(secretName);
+            NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
             namedValueSecret.setEncryptedValue("some value".getBytes());
             doReturn(
                 Arrays.asList(namedValueSecret.setVersionCreatedAt(frozenTime))
@@ -140,7 +140,7 @@ public class SecretsControllerFindTest {
       describe("finding credentials by path", () -> {
         beforeEach(() -> {
           String substring = secretName.substring(0, secretName.lastIndexOf("/"));
-          NamedValueSecretData namedValueSecret = new NamedValueSecretData(secretName);
+          NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
           namedValueSecret.setEncryptedValue("some value".getBytes());
           doReturn(
               Arrays.asList(namedValueSecret.setVersionCreatedAt(frozenTime))
@@ -175,7 +175,7 @@ public class SecretsControllerFindTest {
 
         it("should return all children which are prefixed with the path case-independently", () -> {
           final String path = "my-namespace";
-          NamedValueSecretData namedValueSecret = new NamedValueSecretData(secretName);
+          NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
           namedValueSecret.setEncryptedValue("some value".getBytes());
           doReturn(
               Arrays.asList(namedValueSecret.setVersionCreatedAt(frozenTime))

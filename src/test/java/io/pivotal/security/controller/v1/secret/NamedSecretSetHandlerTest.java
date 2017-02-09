@@ -62,9 +62,9 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
           behavesLikeMapper(() -> subject,
               () -> subject.stringSetRequestTranslator,
               SecretKind.VALUE,
-              NamedValueSecretData.class,
-              new NamedValueSecretData(),
-              mock(NamedValueSecretData.class))
+              NamedValueSecret.class,
+              new NamedValueSecret(),
+              mock(NamedValueSecret.class))
       );
 
       describe(

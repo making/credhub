@@ -1,8 +1,11 @@
-package io.pivotal.security.entity;
+package io.pivotal.security.domain;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.CertificateAuthorityView;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,6 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.time.Instant;
 import java.util.UUID;
 
+import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -24,24 +28,52 @@ import static org.hamcrest.core.IsNull.notNullValue;
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class NamedCertificateSecretTest {
+public class NamedCertificateAuthorityTest {
+  @Autowired
+  private ObjectMapper objectMapper;
+
   @Autowired
   JdbcTemplate jdbcTemplate;
 
-  private NamedCertificateSecretData subject;
+  private NamedCertificateAuthority subject;
 
   {
     wireAndUnwire(this, false);
 
     beforeEach(() -> {
-      subject = new NamedCertificateSecretData("Foo")
-          .setCa("my-ca")
-          .setCertificate("my-cert")
-          .setPrivateKey("my-priv");
+      subject = new NamedCertificateAuthority("Foo");
+      subject.setCertificate("cert");
+      subject.setPrivateKey("priv");
+      subject.setType("root");
     });
 
-    it("returns type certificate", () -> {
-      assertThat(subject.getSecretType(), equalTo("certificate"));
+    afterEach(() -> {
+      jdbcTemplate.execute("delete from named_secret");
+      jdbcTemplate.execute("delete from named_certificate_authority");
+      jdbcTemplate.execute("delete from encryption_key_canary");
+    });
+
+    it("creates a model from entity", () -> {
+      UUID uuid = UUID.randomUUID();
+      subject.setUuid(uuid);
+      CertificateAuthorityView certificateAuthorityView = CertificateAuthorityView.fromEntity(subject);
+      String expectedJson = "{" +
+          "\"version_created_at\":null," +
+          "\"type\":\"root\"," +
+          "\"id\":\"" + uuid.toString() + "\"," +
+          "\"value\":{" +
+          "\"certificate\":\"cert\"," +
+          "\"private_key\":\"priv\"" +
+          "}" +
+          "}";
+      assertThat(objectMapper.writer().writeValueAsString(certificateAuthorityView), equalTo(expectedJson));
+    });
+
+    it("set version-created-at time on generated view", () -> {
+      Instant now = Instant.now();
+      subject.setVersionCreatedAt(now);
+      CertificateAuthorityView actual = CertificateAuthorityView.fromEntity(subject);
+      assertThat(actual.getVersionCreatedAt(), equalTo(now));
     });
 
     it("sets the nonce and the encrypted private key", () -> {
@@ -61,22 +93,18 @@ public class NamedCertificateSecretTest {
         UUID uuid = UUID.randomUUID();
         UUID encryptionKeyUuid = UUID.randomUUID();
 
-        subject = new NamedCertificateSecretData("name");
-        subject.setCa("fake-ca");
+        subject = new NamedCertificateAuthority("name");
         subject.setCertificate("fake-certificate");
         subject.setEncryptedValue("fake-private-key".getBytes());
         subject.setNonce("fake-nonce".getBytes());
-        subject.setCaName("ca-name");
         subject.setUuid(uuid);
         subject.setVersionCreatedAt(frozenTime);
         subject.setEncryptionKeyUuid(encryptionKeyUuid);
 
-        NamedCertificateSecretData copy = new NamedCertificateSecretData();
+        NamedCertificateAuthority copy = new NamedCertificateAuthority();
         subject.copyInto(copy);
 
         assertThat(copy.getName(), equalTo("name"));
-        assertThat(copy.getCaName(), equalTo("ca-name"));
-        assertThat(copy.getCa(), equalTo("fake-ca"));
         assertThat(copy.getEncryptedValue(), equalTo("fake-private-key".getBytes()));
         assertThat(copy.getNonce(), equalTo("fake-nonce".getBytes()));
         assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));

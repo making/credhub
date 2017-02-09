@@ -30,7 +30,7 @@ public class StringSetRequestTranslatorTest {
 
   private StringSetRequestTranslator subject;
 
-  private NamedValueSecretData entity;
+  private NamedValueSecret entity;
 
   {
     wireAndUnwire(this, false);
@@ -38,7 +38,7 @@ public class StringSetRequestTranslatorTest {
     describe("populating entity from JSON", () -> {
       beforeEach(() -> {
         subject = new StringSetRequestTranslator();
-        entity = new NamedValueSecretData("rick");
+        entity = new NamedValueSecret("rick");
       });
 
       it("fills in entity with values from JSON", () -> {

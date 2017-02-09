@@ -142,9 +142,9 @@ public class SecretsControllerDeleteTest {
 
       describe("when there are multiple secrets with that name", () -> {
         beforeEach(() -> {
-          NamedValueSecretData value1 = new NamedValueSecretData(secretName);
+          NamedValueSecret value1 = new NamedValueSecret(secretName);
           value1.setEncryptedValue("value1".getBytes());
-          NamedValueSecretData value2 = new NamedValueSecretData(secretName);
+          NamedValueSecret value2 = new NamedValueSecret(secretName);
           value2.setEncryptedValue("value2".getBytes());
           doReturn(2L).when(secretDataService).delete(secretName);
 
@@ -170,9 +170,9 @@ public class SecretsControllerDeleteTest {
 
       describe("name can come as a request parameter", () -> {
         beforeEach(() -> {
-          NamedValueSecretData value1 = new NamedValueSecretData(secretName);
+          NamedValueSecret value1 = new NamedValueSecret(secretName);
           value1.setEncryptedValue("value1".getBytes());
-          NamedValueSecretData value2 = new NamedValueSecretData(secretName);
+          NamedValueSecret value2 = new NamedValueSecret(secretName);
           value2.setEncryptedValue("value2".getBytes());
           doReturn(2L).when(secretDataService).delete(secretName.toUpperCase());
         });
@@ -197,9 +197,9 @@ public class SecretsControllerDeleteTest {
 
       describe("when name has a leading slash", () -> {
         it("should strip the leading slash and delete credential(s)", () -> {
-          NamedValueSecretData value1 = new NamedValueSecretData(secretName);
+          NamedValueSecret value1 = new NamedValueSecret(secretName);
           value1.setEncryptedValue("value1".getBytes());
-          NamedValueSecretData value2 = new NamedValueSecretData(secretName);
+          NamedValueSecret value2 = new NamedValueSecret(secretName);
           value2.setEncryptedValue("value2".getBytes());
           doReturn(2L)
               .when(secretDataService).delete(secretName.toUpperCase());
