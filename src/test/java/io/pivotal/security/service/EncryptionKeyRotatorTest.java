@@ -4,10 +4,10 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.entity.NamedSshSecret;
+import io.pivotal.security.entity.NamedCertificateSecretData;
+import io.pivotal.security.entity.NamedPasswordSecretData;
+import io.pivotal.security.entity.NamedSecretData;
+import io.pivotal.security.entity.NamedSshSecretData;
 import io.pivotal.security.entity.SecretEncryptionHelper;
 import org.junit.runner.RunWith;
 import org.springframework.data.domain.SliceImpl;
@@ -25,9 +25,9 @@ public class EncryptionKeyRotatorTest {
   private SecretDataService secretDataService;
   private CertificateAuthorityDataService certificateAuthorityDataService;
 
-  private NamedSecret certificateSecret;
-  private NamedSecret passwordSecret;
-  private NamedSshSecret sshSecret;
+  private NamedSecretData certificateSecret;
+  private NamedSecretData passwordSecret;
+  private NamedSshSecretData sshSecret;
 
   private NamedCertificateAuthority certificateAuthority1;
   private NamedCertificateAuthority certificateAuthority2;
@@ -39,9 +39,9 @@ public class EncryptionKeyRotatorTest {
       secretDataService = mock(SecretDataService.class);
       certificateAuthorityDataService = mock(CertificateAuthorityDataService.class);
 
-      certificateSecret = new NamedCertificateSecret();
-      passwordSecret = new NamedPasswordSecret();
-      sshSecret = new NamedSshSecret();
+      certificateSecret = new NamedCertificateSecretData();
+      passwordSecret = new NamedPasswordSecretData();
+      sshSecret = new NamedSshSecretData();
 
       when(secretDataService.findEncryptedWithAvailableInactiveKey())
           .thenReturn(new SliceImpl<>(asList(certificateSecret, passwordSecret)))

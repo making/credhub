@@ -32,7 +32,7 @@ import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 @Inheritance(strategy = InheritanceType.JOINED)
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
-abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedValueContainer {
+abstract public class NamedSecretData<Z extends NamedSecretData> implements EncryptedValueContainer {
   static String SECRET_TYPE;
   // Use VARBINARY to make all 3 DB types happy.
   // H2 doesn't distinguish between "binary" and "varbinary" - see
@@ -68,11 +68,11 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
   private UUID encryptionKeyUuid;
 
-  public NamedSecret() {
+  public NamedSecretData() {
     this(null);
   }
 
-  public NamedSecret(String name) {
+  public NamedSecretData(String name) {
     setName(name);
   }
 

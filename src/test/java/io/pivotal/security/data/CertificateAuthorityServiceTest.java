@@ -2,7 +2,7 @@ package io.pivotal.security.data;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.NamedCertificateAuthority;
-import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.entity.NamedCertificateSecretData;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
@@ -26,13 +26,13 @@ public class CertificateAuthorityServiceTest {
 
   Certificate certificate;
   NamedCertificateAuthority namedCertificateAuthority;
-  NamedCertificateSecret namedCertificateSecret;
+  NamedCertificateSecretData namedCertificateSecret;
 
   {
     beforeEach(() -> {
       certificate = new Certificate(null, "my-cert", "my-key");
       namedCertificateAuthority = mock(NamedCertificateAuthority.class);
-      namedCertificateSecret = mock(NamedCertificateSecret.class);
+      namedCertificateSecret = mock(NamedCertificateSecretData.class);
 
       certificateAuthorityDataService = mock(CertificateAuthorityDataService.class);
       secretDataService = mock(SecretDataService.class);

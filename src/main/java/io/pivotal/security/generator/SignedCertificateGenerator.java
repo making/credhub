@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
-import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.entity.NamedCertificateSecretData;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
@@ -76,7 +76,7 @@ public class SignedCertificateGenerator {
   }
 
   private boolean isCaCert(CertificateSecretParameters params) {
-    boolean isNamedCertificateAuthority = !NamedCertificateSecret.SECRET_TYPE.equals(params.getType());
+    boolean isNamedCertificateAuthority = !NamedCertificateSecretData.SECRET_TYPE.equals(params.getType());
     boolean isCaParam = params.getIsCA();
     return isNamedCertificateAuthority || isCaParam;
   }

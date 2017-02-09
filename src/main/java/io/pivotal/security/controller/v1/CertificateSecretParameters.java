@@ -1,6 +1,6 @@
 package io.pivotal.security.controller.v1;
 
-import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.entity.NamedCertificateSecretData;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -75,7 +75,7 @@ public class CertificateSecretParameters implements RequestParameters {
 
       this.caName = caName;
 
-      this.type = NamedCertificateSecret.SECRET_TYPE; // Delete when Certificate Authorities are removed.
+      this.type = NamedCertificateSecretData.SECRET_TYPE; // Delete when Certificate Authorities are removed.
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

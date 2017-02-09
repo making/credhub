@@ -1,6 +1,6 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.NamedSecretData;
 import io.pivotal.security.entity.NamedSecretImpl;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -11,11 +11,11 @@ import org.springframework.data.domain.Slice;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import static io.pivotal.security.repository.CertificateAuthorityRepository.CERTIFICATE_AUTHORITY_BATCH_SIZE;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
+import static io.pivotal.security.repository.CertificateAuthorityRepository.CERTIFICATE_AUTHORITY_BATCH_SIZE;
 
 @Service
 public class SecretDataService {
@@ -57,7 +57,7 @@ public class SecretDataService {
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
   }
 
-  public <Z extends NamedSecret> Z save(Z namedSecret) {
+  public <Z extends NamedSecretData> Z save(Z namedSecret) {
     namedSecret.setName(addLeadingSlashIfMissing(namedSecret.getName()));
     if (namedSecret.getEncryptionKeyUuid() == null) {
       namedSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
@@ -69,23 +69,23 @@ public class SecretDataService {
     return secretRepository.findAllPaths(true);
   }
 
-  public NamedSecret findMostRecent(String name) {
+  public NamedSecretData findMostRecent(String name) {
     return secretRepository.findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(addLeadingSlashIfMissing(name));
   }
 
-  public NamedSecret findByUuid(String uuid) {
+  public NamedSecretData findByUuid(String uuid) {
     return secretRepository.findOneByUuid(UUID.fromString(uuid));
   }
 
-  public NamedSecret findByUuid(UUID uuid) {
+  public NamedSecretData findByUuid(UUID uuid) {
     return secretRepository.findOneByUuid(uuid);
   }
 
-  public List<NamedSecret> findContainingName(String name) {
+  public List<NamedSecretData> findContainingName(String name) {
     return findMostRecentLikeSubstring('%' + name + '%');
   }
 
-  public List<NamedSecret> findStartingWithPath(String path) {
+  public List<NamedSecretData> findStartingWithPath(String path) {
     path = addLeadingSlashIfMissing(path);
     path = !path.endsWith("/") ? path + "/" : path;
 
@@ -98,17 +98,17 @@ public class SecretDataService {
 
   public void deleteAll() { secretRepository.deleteAll(); }
 
-  public List<NamedSecret> findAllByName(String name) {
+  public List<NamedSecretData> findAllByName(String name) {
     return secretRepository.findAllByNameIgnoreCase(addLeadingSlashIfMissing(name));
   }
 
-  private List<NamedSecret> findMostRecentLikeSubstring(String substring) {
+  private List<NamedSecretData> findMostRecentLikeSubstring(String substring) {
     // The subquery gets us the right name/version_created_at pairs, but changes the capitalization of the names.
     return jdbcTemplate.query(
         FIND_MOST_RECENT_BY_SUBSTRING_QUERY,
       new Object[] {substring},
       (rowSet, rowNum) -> {
-        NamedSecret secret = new NamedSecretImpl();
+        NamedSecretData secret = new NamedSecretImpl();
 
         secret.setName(rowSet.getString("name"));
         secret.setVersionCreatedAt(Instant.ofEpochMilli(rowSet.getLong("version_created_at")));
@@ -132,7 +132,7 @@ public class SecretDataService {
     return secretRepository.countByEncryptionKeyUuidIn(uuids);
   }
 
-  public Slice<NamedSecret> findEncryptedWithAvailableInactiveKey() {
+  public Slice<NamedSecretData> findEncryptedWithAvailableInactiveKey() {
     return secretRepository.findByEncryptionKeyUuidIn(
       encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
       new PageRequest(0, CERTIFICATE_AUTHORITY_BATCH_SIZE)

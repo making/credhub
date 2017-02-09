@@ -3,9 +3,9 @@ package io.pivotal.security.repository;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedStringSecret;
-import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.entity.NamedCertificateSecretData;
+import io.pivotal.security.entity.NamedStringSecretData;
+import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.helper.EncryptionCanaryHelper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
@@ -70,7 +70,7 @@ public class SecretRepositoryTest {
       Arrays.fill(encryptedValue, (byte) 'A');
       final StringBuilder stringBuilder = new StringBuilder(7000);
       Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-      NamedCertificateSecret entity = new NamedCertificateSecret(secretName);
+      NamedCertificateSecretData entity = new NamedCertificateSecretData(secretName);
       final String longString = stringBuilder.toString();
       entity.setCa(longString);
       entity.setCertificate(longString);
@@ -78,7 +78,7 @@ public class SecretRepositoryTest {
       entity.setEncryptionKeyUuid(canaryUuid);
 
       subject.save(entity);
-      NamedCertificateSecret certificateSecret = (NamedCertificateSecret) subject.findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(secretName);
+      NamedCertificateSecretData certificateSecret = (NamedCertificateSecretData) subject.findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(secretName);
       assertThat(certificateSecret.getCa().length(), equalTo(7000));
       assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
       assertThat(certificateSecret.getEncryptedValue(), equalTo(encryptedValue));
@@ -91,7 +91,7 @@ public class SecretRepositoryTest {
 
       final StringBuilder stringBuilder = new StringBuilder(7000);
       Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-      NamedStringSecret entity = new NamedValueSecret(secretName);
+      NamedStringSecretData entity = new NamedValueSecretData(secretName);
       entity.setEncryptedValue(encryptedValue);
       entity.setEncryptionKeyUuid(canaryUuid);
 
