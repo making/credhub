@@ -158,6 +158,10 @@ public class AuditRecordBuilder {
     return this;
   }
 
+  public void setOperationCode(AuditingOperationCode operationCode) {
+    this.operationCode = operationCode;
+  }
+
   public OperationAuditRecord build(Instant now) {
     OAuth2Request oAuth2Request = authentication.getOAuth2Request();
 
