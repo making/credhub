@@ -9,14 +9,18 @@ import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
-import javax.servlet.http.HttpServletRequest;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
+
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Set;
 
-import static io.pivotal.security.entity.AuditingOperationCode.*;
+import javax.servlet.http.HttpServletRequest;
 
 public class AuditRecordBuilder {
   private final String hostName;
@@ -148,6 +152,10 @@ public class AuditRecordBuilder {
   public AuditRecordBuilder setIsSuccess(boolean isSuccess) {
     this.isSuccess = isSuccess;
     return this;
+  }
+
+  public void setOperationCode(AuditingOperationCode operationCode) {
+    this.operationCode = operationCode;
   }
 
   public OperationAuditRecord build(Instant now) {
